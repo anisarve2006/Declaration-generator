@@ -86,8 +86,8 @@ os.makedirs(PDF_DIR, exist_ok=True)
 # --------------------------------------------------------------------------
 FONT_NAME = "Quattrocento Sans"
 BODY_SIZE_PT = 10                  # w:sz val="20" (half-points) -> 10pt
-PARA_SPACE_AFTER_PT = 8            # w:spacing w:after="160" (twips) -> 8pt
-LINE_SPACING = 278.0 / 240.0       # w:line="278" auto -> 278/240 = 1.15833
+PARA_SPACE_AFTER_PT = 10           # Increased paragraph spacing after
+LINE_SPACING = 1.25                # Comfortable line spacing
 SECOND_COL_TAB_IN = 3.5            # tab stop for the 2nd field column
 SIGNATURE_MAX_W_IN = 719394 / 914400.0   # from reference form's embedded size
 SIGNATURE_MAX_H_IN = 295465 / 914400.0   # (0.7867in x 0.3231in)
@@ -431,10 +431,12 @@ def generate_docx(data, out_path):
 
     # --- Declaration intro line -----------------------------------------
     p = add_para()
+    p.paragraph_format.space_before = Pt(14)
     add_run(p, DECLARATION_INTRO)
 
     # --- Declaration options: one paragraph, line breaks between items --
     p = add_para()
+    p.paragraph_format.space_before = Pt(10)
     for idx, text in enumerate(DECLARATION_OPTIONS, start=1):
         mark = CHECK_MARK if idx in data["selected_options"] else BOX_EMPTY
         if idx != 1:
@@ -443,9 +445,11 @@ def generate_docx(data, out_path):
 
     # --- Ethics warning: justified ---------------------------------------
     p = add_para(justify=True)
+    p.paragraph_format.space_before = Pt(14)
     add_run(p, ETHICS_WARNING)
 
     # --- Student Info & Signature Borderless Table -----------------------
+    add_para()  # Blank spacer line before student info & signature table
     sig_table = doc.add_table(rows=2, cols=2)
     remove_table_borders(sig_table)
 
