@@ -415,9 +415,62 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="vit-badge">🎓 VIDYALANKAR INSTITUTE OF TECHNOLOGY</div>', unsafe_allow_html=True)
-st.markdown('<div class="main-title">Declaration Form Generator</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Generate and download official declaration forms (.docx & .pdf) formatted for VIT submissions.</div>', unsafe_allow_html=True)
+header_col1, header_col2 = st.columns([0.82, 0.18])
+with header_col1:
+    st.markdown('<div class="vit-badge">🎓 VIDYALANKAR INSTITUTE OF TECHNOLOGY</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-title">Declaration Form Generator</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-title">Generate and download official declaration forms (.docx & .pdf) formatted for VIT submissions.</div>', unsafe_allow_html=True)
+
+with header_col2:
+    with st.popover("⚙️", help="Customise Details & Add Subjects"):
+        st.markdown("### ⚙️ Customise Profile & Subjects")
+        
+        # Section 1: Add Custom Subject
+        st.caption("➕ **Add Custom Subject**")
+        c_name = st.text_input("Subject Name", key="pop_c_name", placeholder="e.g. Robotics")
+        c_code = st.text_input("Subject Code", key="pop_c_code", placeholder="e.g. ROB101")
+        c_vert = st.text_input("Vertical", value="CUSTOM", key="pop_c_vert")
+        
+        if st.button("➕ Add Subject", key="btn_add_subj"):
+            if c_name and c_code:
+                if "custom_subjects" not in st.session_state:
+                    st.session_state["custom_subjects"] = []
+                st.session_state["custom_subjects"].append({"name": c_name, "code": c_code, "vertical": c_vert})
+                st.toast(f"✅ Added subject: {c_name} ({c_code})")
+                st.rerun()
+            else:
+                st.warning("Enter both Subject Name and Code.")
+
+        st.markdown("---")
+        
+        # Section 2: Customise Profile Defaults
+        st.caption("👤 **Customise Profile Defaults**")
+        p_name = st.text_input("Full Name", value=st.session_state.get("student_name", "Anirudh Ghanshyam Sarve"), key="pop_p_name")
+        p_branch = st.text_input("Branch", value=st.session_state.get("branch", "CMPN"), key="pop_p_branch")
+        p_sem = st.text_input("Semester", value=st.session_state.get("semester", "V"), key="pop_p_sem")
+        p_div = st.text_input("Division", value=st.session_state.get("division", "A"), key="pop_p_div")
+        
+        if st.button("💾 Save Profile Defaults", key="btn_save_prof"):
+            st.session_state["student_name"] = p_name
+            st.session_state["branch"] = p_branch
+            st.session_state["semester"] = p_sem
+            st.session_state["division"] = p_div
+            
+            # Sync to Supabase if configured
+            sp_url = st.session_state.get("sb_url")
+            sp_key = st.session_state.get("sb_key")
+            curr_roll = st.session_state.get("roll_no", "24102A0062")
+            if sp_url and sp_key and curr_roll:
+                upsert_supabase_profile(sp_url, sp_key, {
+                    "roll_no": curr_roll,
+                    "student_name": p_name,
+                    "branch": p_branch,
+                    "semester": p_sem,
+                    "division": p_div,
+                    "custom_subjects": json.dumps(st.session_state.get("custom_subjects", []))
+                })
+            st.toast("✅ Profile defaults saved and synced!")
+            st.rerun()
 
 # Supabase Config load from secrets / env
 env_sb_url = os.environ.get("SUPABASE_URL", "")
@@ -437,9 +490,10 @@ if env_sb_url and env_sb_key:
 # Subject selection
 with st.container():
     st.subheader("📚 Subject & Academic Details")
-    subject_names = [s["name"] for s in ALL_SUBJECTS]
+    all_subj_list = ALL_SUBJECTS + st.session_state.get("custom_subjects", [])
+    subject_names = [s["name"] for s in all_subj_list]
     selected_subject_name = st.selectbox("Select Subject", options=subject_names)
-    selected_subj_info = next(s for s in ALL_SUBJECTS if s["name"] == selected_subject_name)
+    selected_subj_info = next((s for s in all_subj_list if s["name"] == selected_subject_name), ALL_SUBJECTS[0])
 
     col_sub1, col_sub2 = st.columns(2)
     with col_sub1:
@@ -470,6 +524,13 @@ with st.container():
                 st.session_state["branch"] = remote.get("branch", "")
                 st.session_state["semester"] = remote.get("semester", "")
                 st.session_state["division"] = remote.get("division", "")
+                if remote.get("custom_subjects"):
+                    try:
+                        c_sub = json.loads(remote["custom_subjects"]) if isinstance(remote["custom_subjects"], str) else remote["custom_subjects"]
+                        if isinstance(c_sub, list):
+                            st.session_state["custom_subjects"] = c_sub
+                    except Exception:
+                        pass
                 st.toast(f"⚡ Synced profile for {roll_input} from Supabase!")
 
     col1, col2 = st.columns(2)
