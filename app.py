@@ -400,14 +400,20 @@ st.markdown('<div class="vit-badge">🎓 VIDYALANKAR INSTITUTE OF TECHNOLOGY</di
 st.markdown('<div class="main-title">Declaration Form Generator</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title">Generate and download official declaration forms (.docx & .pdf) formatted for VIT submissions.</div>', unsafe_allow_html=True)
 
-# Supabase Config expander
-with st.expander("⚙️ Supabase Database Credentials (Optional Sync)"):
-    sb_url = st.text_input("Supabase Project URL", value=st.session_state.get("sb_url", ""), placeholder="https://xyz.supabase.co")
-    sb_key = st.text_input("Supabase Anon Key", value=st.session_state.get("sb_key", ""), type="password", placeholder="eyJhbGciOi...")
-    if sb_url and sb_key:
-        st.session_state["sb_url"] = sb_url
-        st.session_state["sb_key"] = sb_key
-        st.success("Cloud database sync active!")
+# Supabase Config load from secrets / env
+env_sb_url = os.environ.get("SUPABASE_URL", "")
+env_sb_key = os.environ.get("SUPABASE_ANON_KEY", "")
+try:
+    if "SUPABASE_URL" in st.secrets:
+        env_sb_url = st.secrets["SUPABASE_URL"]
+    if "SUPABASE_ANON_KEY" in st.secrets:
+        env_sb_key = st.secrets["SUPABASE_ANON_KEY"]
+except Exception:
+    pass
+
+if env_sb_url and env_sb_key:
+    st.session_state["sb_url"] = env_sb_url
+    st.session_state["sb_key"] = env_sb_key
 
 # Subject selection
 with st.container():
