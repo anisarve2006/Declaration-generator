@@ -7,24 +7,32 @@ A single-file desktop app (Tkinter GUI) that generates the VIT
 as a Word (.docx) and/or PDF file, for any subject/vertical and any
 assignment/experiment number.
 
-Visual design (font, sizing, spacing, layout) matches the reference
-form exactly:
-    - Font: Quattrocento Sans, 10pt body/labels/titles (bold for values
-      & titles), justified for the ethics-warning paragraph.
-    - Page: A4, 1 inch margins all round.
-    - Paragraph spacing: 8pt after, 1.15x line spacing.
-    - Titles are left-aligned (not centered), bold, same 10pt size.
-    - Two-column fields (Branch/Vertical, Semester/Division,
-      Subject Name/Code) are tab-aligned into a second column, and
-      Semester+Division / Subject Name+Code share one paragraph via a
-      line break, exactly as in the reference form.
-    - Declaration statements live in a single paragraph separated by
-      line breaks, using check (checked) / box (unchecked) glyphs.
-    - Student Name/Roll No and Signature/Date share one paragraph via
-      a line break.
+This version is built to match the reference form pixel-for-pixel:
+    - The real "Quattrocento Sans" font is EMBEDDED directly inside
+      the generated .docx (copied from a "fonts" folder next to this
+      script), so it renders correctly on any machine even if the
+      font isn't installed -- this is what was missing before and is
+      why the old output looked like it fell back to a random default
+      font.
+    - The PDF uses the same embedded .ttf files via reportlab, so the
+      .docx and the .pdf are visually identical.
+    - Two-column fields (Branch/Vertical, Semester/Division, Subject
+      Name/Code, Name/Roll No, Signature/Date) use real tab stops in
+      the DOCX and a real fixed-width table in the PDF -- not
+      hand-counted spaces -- so columns line up regardless of how
+      long the text in them is.
+    - Paragraph spacing (8pt after / 1.1583 line spacing), 10pt body
+      size, bold-for-values / regular-for-labels, left-aligned bold
+      titles, and a justified ethics-warning paragraph all match the
+      reference form exactly.
+    - The signature image pipeline was rewritten. The old version
+      over-thresholded the image and frequently rendered as a solid
+      black block. It now auto-contrasts, crops to the ink, and
+      anti-aliases the result onto a clean white background at the
+      same size used in the reference form.
 
 Requirements (install once):
-    pip install python-docx reportlab
+    pip install python-docx reportlab pillow
 
 Run:
     python declaration_form_generator.py
@@ -36,21 +44,29 @@ Output location:
     <SubjectCode>-<AssignmentNo>-Declaration Form.docx / .pdf
     e.g.  forms/docs/PCCE10T-Experiment1-Declaration Form.docx
 
+Fonts (REQUIRED for a pixel-accurate match):
+    Put these four files in a "fonts" folder next to this script:
+        QuattrocentoSans-regular.ttf
+        QuattrocentoSans-bold.ttf
+        QuattrocentoSans-italic.ttf
+        QuattrocentoSans-boldItalic.ttf
+    They are bundled together with this script. If they are missing,
+    the DOCX still *requests* "Quattrocento Sans" (Word will
+    substitute a similar font on machines that don't have it), and
+    the PDF quietly falls back to Helvetica.
+
 Optional: drop a "college_logo.png" file next to this script and it
 will be embedded at the top of both the DOCX and PDF outputs. You can
 also attach a signature image (PNG/JPG) from the app's "Signature
-Image" field -- it gets embedded on the Signature line of both files.
-
-Fonts: this script looks for the Quattrocento Sans .ttf family in a
-"fonts" folder next to it (Regular / Bold / Italic / BoldItalic). If
-present, the PDF embeds the real typeface so it matches the DOCX
-pixel-for-pixel; if absent, the PDF quietly falls back to Helvetica
-and the DOCX still requests "Quattrocento Sans" (Word substitutes a
-similar font on machines that don't have it installed).
+Image" field -- it gets cleaned up and embedded on the Signature line
+of both files.
 """
 
 import os
+import io
 import sys
+import shutil
+import zipfile
 import datetime
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
@@ -69,12 +85,21 @@ os.makedirs(PDF_DIR, exist_ok=True)
 # 0.5 DESIGN CONSTANTS  (lifted from the reference form)
 # --------------------------------------------------------------------------
 FONT_NAME = "Quattrocento Sans"
-BODY_SIZE_PT = 10          # w:sz val="20" (half-points) -> 10pt
-PARA_SPACE_AFTER_PT = 8    # w:spacing w:after="160" (twips) -> 8pt
-LINE_SPACING = 1.1583      # w:line="278" auto -> 278/240
-SECOND_COL_TAB_IN = 3.3    # tab stop position for the 2nd field column
-CHECK_MARK = "\u2713"      # (checked)
-BOX_EMPTY = "\u2610"       # (unchecked)
+BODY_SIZE_PT = 10                  # w:sz val="20" (half-points) -> 10pt
+PARA_SPACE_AFTER_PT = 8            # w:spacing w:after="160" (twips) -> 8pt
+LINE_SPACING = 278.0 / 240.0       # w:line="278" auto -> 278/240 = 1.15833
+SECOND_COL_TAB_IN = 3.5            # tab stop for the 2nd field column
+SIGNATURE_MAX_W_IN = 719394 / 914400.0   # from reference form's embedded size
+SIGNATURE_MAX_H_IN = 295465 / 914400.0   # (0.7867in x 0.3231in)
+CHECK_MARK = "\u2713"               # checked
+BOX_EMPTY = "\u2610"                # unchecked
+
+FONT_FILES = {
+    "regular": os.path.join(FONT_DIR, "QuattrocentoSans-regular.ttf"),
+    "bold": os.path.join(FONT_DIR, "QuattrocentoSans-bold.ttf"),
+    "italic": os.path.join(FONT_DIR, "QuattrocentoSans-italic.ttf"),
+    "boldItalic": os.path.join(FONT_DIR, "QuattrocentoSans-boldItalic.ttf"),
+}
 
 # --------------------------------------------------------------------------
 # 1. VERTICAL / SUBJECT DATA
@@ -105,6 +130,12 @@ VERTICALS = {
     ],
 }
 
+DECLARATION_INTRO = (
+    "I hereby declare that for the assignment / academic activity "
+    "submitted by me, I confirm ONE of the following statements by "
+    "ticking (\u2610) the appropriate box:"
+)
+
 DECLARATION_OPTIONS = [
     "I have prepared the assignment / academic activity entirely by myself.",
     "I have completed the assignment / academic activity with academic "
@@ -118,86 +149,98 @@ DECLARATION_OPTIONS = [
     "I have copied the assignment / academic activity from peers / friends.",
 ]
 
-LOGO_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "college_logo.png")
+ETHICS_WARNING = (
+    "I understand that selecting options (4) or (5) indicates unethical "
+    "academic practice and may attract academic penalties, including "
+    "rejection of the assignment or disciplinary action, as per the "
+    "rules of Vidyalankar Institute of Technology, Mumbai. I submit "
+    "this declaration truthfully and accept full responsibility for "
+    "the same."
+)
+
+LOGO_FILE = os.path.join(SCRIPT_DIR, "college_logo.png")
+
 
 # --------------------------------------------------------------------------
-# 1.5 SIGNATURE PROCESSOR (Fixed Ratio & Max Dimensions)
+# 1.5 SIGNATURE PROCESSOR
+#     Auto-contrasts, crops to the ink, anti-aliases, and places the
+#     result on a clean white background at a fixed max size (matches
+#     the reference form's embedded signature: ~0.79in x 0.32in).
 # --------------------------------------------------------------------------
 def process_signature_image(img_path_or_bytes):
     """
-    Auto-enhances contrast, smooths freehand strokes using sub-pixel anti-aliasing,
-    trims whitespace/transparent padding, and scales signature proportionally
-    within fixed maximum limits (max height: 0.32 in, max width: 0.8 in --
-    matching the reference form's embedded signature size).
-    Returns: (processed_bytes_io, target_width_inches, target_height_inches)
+    Returns (processed_bytes_io, target_width_inches, target_height_inches)
+    or (None, 0, 0) if no image / processing failed.
     """
     if not img_path_or_bytes:
         return None, 0, 0
     try:
-        from PIL import Image, ImageEnhance, ImageFilter
-        import io
+        from PIL import Image, ImageOps
+
         if isinstance(img_path_or_bytes, str):
             if not os.path.exists(img_path_or_bytes):
                 return None, 0, 0
-            img = Image.open(img_path_or_bytes).convert("RGBA")
+            img = Image.open(img_path_or_bytes)
         else:
             img_path_or_bytes.seek(0)
-            img = Image.open(img_path_or_bytes).convert("RGBA")
+            img = Image.open(img_path_or_bytes)
 
-        # 1. Upsample for sub-pixel stroke precision
-        w_orig, h_orig = img.size
-        if w_orig > 0 and h_orig > 0:
-            scale = 3
-            img_work = img.resize((w_orig * scale, h_orig * scale), Image.Resampling.LANCZOS)
+        # 1. Flatten any transparency onto a plain white background --
+        #    matches the reference form's signature, which is a plain
+        #    white-background PNG, not a transparent cut-out.
+        if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+            img = img.convert("RGBA")
+            bg = Image.new("RGBA", img.size, (255, 255, 255, 255))
+            img = Image.alpha_composite(bg, img).convert("RGB")
         else:
-            img_work = img
+            img = img.convert("RGB")
 
-        # Composite onto solid white background to convert transparent pixels (A=0) to white (255)
-        white_bg = Image.new("RGBA", img_work.size, (255, 255, 255, 255))
-        white_bg.alpha_composite(img_work)
+        # 2. Grayscale + autocontrast to normalize scan/photo lighting.
+        gray = img.convert("L")
+        gray = ImageOps.autocontrast(gray, cutoff=1)
 
-        # 2. Extract luminance & enhance contrast to remove background noise
-        gray = white_bg.convert("L")
-        gray_enhanced = ImageEnhance.Contrast(gray).enhance(2.2)
+        # 3. Soft threshold: only true background noise is dropped to
+        #    white; ink stays as its natural gray levels so edges stay
+        #    smooth instead of collapsing into one solid black shape.
+        gray = gray.point(lambda p: 255 if p > 235 else p)
 
-        # 3. Create smooth opacity mask
-        mask = Image.eval(gray_enhanced, lambda v: 255 - v if v < 225 else 0)
-        mask_smooth = mask.filter(ImageFilter.GaussianBlur(radius=1.2))
-        mask_final = Image.eval(mask_smooth, lambda v: min(255, int(v * 1.6)))
-
-        # 4. Generate crisp dark ink layer
-        ink_layer = Image.new("RGBA", img_work.size, (15, 23, 42, 255))
-        ink_layer.putalpha(mask_final)
-
-        # 5. Downscale with Lanczos anti-aliasing for silky smooth strokes
-        smooth_img = ink_layer.resize((w_orig, h_orig), Image.Resampling.LANCZOS)
-
-        # 6. Crop tightly to signature content
-        bbox = smooth_img.getchannel('A').getbbox()
+        # 4. Crop tightly to the ink (non-white pixels), with a little
+        #    padding so strokes aren't clipped.
+        inverted = ImageOps.invert(gray)
+        bbox = inverted.getbbox()
         if bbox:
-            smooth_img = smooth_img.crop(bbox)
+            pad = 6
+            left = max(0, bbox[0] - pad)
+            top = max(0, bbox[1] - pad)
+            right = min(gray.width, bbox[2] + pad)
+            bottom = min(gray.height, bbox[3] + pad)
+            gray = gray.crop((left, top, right, bottom))
 
-        out = io.BytesIO()
-        smooth_img.save(out, format="PNG")
-        out.name = "signature.png"
-        out.seek(0)
+        w, h = gray.size
+        if w == 0 or h == 0:
+            return None, 0, 0
+        aspect = w / float(h)
 
-        w, h = smooth_img.size
-        aspect = w / float(h) if h > 0 else 2.4
-
-        MAX_H = 0.32  # matches reference form's embedded signature height
-        MAX_W = 0.80  # matches reference form's embedded signature width
-
-        target_h = MAX_H
+        # 5. Fit inside the reference form's signature box.
+        target_h = SIGNATURE_MAX_H_IN
         target_w = target_h * aspect
-
-        if target_w > MAX_W:
-            target_w = MAX_W
+        if target_w > SIGNATURE_MAX_W_IN:
+            target_w = SIGNATURE_MAX_W_IN
             target_h = target_w / aspect
 
+        # 6. Render at a crisp resolution (300dpi) with Lanczos
+        #    resampling for smooth, anti-aliased strokes.
+        px_w = max(1, int(round(target_w * 300)))
+        px_h = max(1, int(round(target_h * 300)))
+        final = gray.resize((px_w, px_h), Image.Resampling.LANCZOS).convert("RGB")
+
+        out = io.BytesIO()
+        final.save(out, format="PNG")
+        out.name = "signature.png"
+        out.seek(0)
         return out, target_w, target_h
     except Exception:
-        return None, 0.79, 0.32
+        return None, 0, 0
 
 
 # --------------------------------------------------------------------------
@@ -220,16 +263,16 @@ def generate_docx(data, out_path):
 
     doc = Document()
 
-    # --- Page setup: A4, 1 inch margins (matches reference sectPr) -------
+    # --- Page setup: A4, 1 inch margins ----------------------------------
     section = doc.sections[0]
-    section.page_width = Cm(21.0)   # A4 width  (11909 twips)
-    section.page_height = Cm(29.7)  # A4 height (16834 twips)
+    section.page_width = Cm(21.0)
+    section.page_height = Cm(29.7)
     section.top_margin = Inches(1)
     section.bottom_margin = Inches(1)
     section.left_margin = Inches(1)
     section.right_margin = Inches(1)
 
-    # --- Base style: Quattrocento Sans 10pt, 8pt-after / 1.15 line -------
+    # --- Base style: Quattrocento Sans 10pt, 8pt-after / 1.1583 line -----
     normal = doc.styles["Normal"]
     normal.font.name = FONT_NAME
     normal.font.size = Pt(BODY_SIZE_PT)
@@ -323,33 +366,19 @@ def generate_docx(data, out_path):
 
     # --- Declaration intro line -----------------------------------------
     p = add_para()
-    add_run(
-        p,
-        "I hereby declare that for the assignment / academic activity "
-        "submitted by me, I confirm the following statement(s) by ticking "
-        f"({BOX_EMPTY}) the appropriate box(es):"
-    )
+    add_run(p, DECLARATION_INTRO)
 
     # --- Declaration options: one paragraph, line breaks between items --
     p = add_para()
-    add_break(p)
     for idx, text in enumerate(DECLARATION_OPTIONS, start=1):
         mark = CHECK_MARK if idx in data["selected_options"] else BOX_EMPTY
-        add_run(p, f"{mark} ({idx}) {text}")
-        if idx != len(DECLARATION_OPTIONS):
+        if idx != 1:
             add_break(p)
+        add_run(p, f"{mark} ({idx}) {text}")
 
     # --- Ethics warning: justified ---------------------------------------
     p = add_para(justify=True)
-    add_run(
-        p,
-        "I understand that selecting options (4) or (5) indicates unethical "
-        "academic practice and may attract academic penalties, including "
-        "rejection of the assignment or disciplinary action, as per the "
-        "rules of Vidyalankar Institute of Technology, Mumbai. I submit "
-        "this declaration truthfully and accept full responsibility for "
-        "the same."
-    )
+    add_run(p, ETHICS_WARNING)
 
     # --- Student Name / Roll No  +  Signature / Date (one paragraph) ----
     p = add_para()
@@ -377,6 +406,112 @@ def generate_docx(data, out_path):
 
     doc.save(out_path)
 
+    # Embed the real Quattrocento Sans font family into the .docx so it
+    # renders correctly even on machines that don't have the font
+    # installed. This is what fixes "wrong font" complaints.
+    embed_fonts_in_docx(out_path)
+
+
+def embed_fonts_in_docx(docx_path):
+    """
+    Post-processes a saved .docx to embed the Quattrocento Sans TTF
+    family (from FONT_FILES) directly inside the file, the same way
+    the reference form does it. Silently does nothing if the font
+    files aren't present next to the script.
+    """
+    if not all(os.path.exists(p) for p in FONT_FILES.values()):
+        return
+
+    tmp_path = docx_path + ".tmp"
+    with zipfile.ZipFile(docx_path, "r") as zin:
+        names = zin.namelist()
+        parts = {name: zin.read(name) for name in names}
+
+    # 1. Add the four font parts.
+    font_targets = {
+        "regular": "word/fonts/QuattrocentoSans-regular.ttf",
+        "bold": "word/fonts/QuattrocentoSans-bold.ttf",
+        "italic": "word/fonts/QuattrocentoSans-italic.ttf",
+        "boldItalic": "word/fonts/QuattrocentoSans-boldItalic.ttf",
+    }
+    for key, target in font_targets.items():
+        with open(FONT_FILES[key], "rb") as f:
+            parts[target] = f.read()
+
+    # 2. fontTable.xml.rels -- relationships from fontTable.xml to the
+    #    four font parts.
+    rel_ids = {
+        "regular": "rFontEmbed1",
+        "bold": "rFontEmbed2",
+        "italic": "rFontEmbed3",
+        "boldItalic": "rFontEmbed4",
+    }
+    rel_type = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/font"
+    rels_xml = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    )
+    for key, target in font_targets.items():
+        fname = target.split("/")[-1]
+        rels_xml += f'<Relationship Id="{rel_ids[key]}" Type="{rel_type}" Target="fonts/{fname}"/>'
+    rels_xml += "</Relationships>"
+    parts["word/_rels/fontTable.xml.rels"] = rels_xml.encode("utf-8")
+
+    # 3. fontTable.xml -- append (or create) the Quattrocento Sans entry.
+    ns = (
+        'xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" '
+        'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
+        'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
+        'xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" mc:Ignorable="w14"'
+    )
+    font_entry = (
+        f'<w:font w:name="{FONT_NAME}">'
+        f'<w:embedRegular r:id="{rel_ids["regular"]}" w:fontKey="{{00000000-0000-0000-0000-000000000000}}" w:subsetted="0"/>'
+        f'<w:embedBold r:id="{rel_ids["bold"]}" w:fontKey="{{00000000-0000-0000-0000-000000000000}}" w:subsetted="0"/>'
+        f'<w:embedItalic r:id="{rel_ids["italic"]}" w:fontKey="{{00000000-0000-0000-0000-000000000000}}" w:subsetted="0"/>'
+        f'<w:embedBoldItalic r:id="{rel_ids["boldItalic"]}" w:fontKey="{{00000000-0000-0000-0000-000000000000}}" w:subsetted="0"/>'
+        f'</w:font>'
+    )
+    if "word/fontTable.xml" in parts:
+        existing = parts["word/fontTable.xml"].decode("utf-8")
+        insert_at = existing.rfind("</w:fonts>")
+        new_xml = existing[:insert_at] + font_entry + existing[insert_at:]
+    else:
+        new_xml = f'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n<w:fonts {ns}>{font_entry}</w:fonts>'
+    parts["word/fontTable.xml"] = new_xml.encode("utf-8")
+
+    # 4. [Content_Types].xml -- make sure .ttf has a default content type.
+    ct_key = "[Content_Types].xml"
+    ct_xml = parts[ct_key].decode("utf-8")
+    if 'Extension="ttf"' not in ct_xml:
+        insert_at = ct_xml.find("<Default")
+        ct_xml = (
+            ct_xml[:insert_at]
+            + '<Default Extension="ttf" ContentType="application/x-font-ttf"/>'
+            + ct_xml[insert_at:]
+        )
+        parts[ct_key] = ct_xml.encode("utf-8")
+
+    # 5. settings.xml -- tell Word the doc embeds its own fonts.
+    settings_key = "word/settings.xml"
+    settings_xml = parts[settings_key].decode("utf-8")
+    if "embedTrueTypeFonts" not in settings_xml:
+        insert_at = settings_xml.find("<w:defaultTabStop")
+        if insert_at == -1:
+            insert_at = settings_xml.find("<w:compat")
+        settings_xml = (
+            settings_xml[:insert_at]
+            + '<w:embedTrueTypeFonts w:val="1"/><w:saveSubsetFonts w:val="0"/>'
+            + settings_xml[insert_at:]
+        )
+        parts[settings_key] = settings_xml.encode("utf-8")
+
+    with zipfile.ZipFile(tmp_path, "w", zipfile.ZIP_DEFLATED) as zout:
+        for name, content in parts.items():
+            zout.writestr(name, content)
+
+    shutil.move(tmp_path, docx_path)
+
 
 # --------------------------------------------------------------------------
 # 3. PDF GENERATION  (reportlab -- no MS Word/LibreOffice required)
@@ -388,20 +523,14 @@ def _register_pdf_fonts():
     from reportlab.pdfbase.ttfonts import TTFont
     from reportlab.lib.fonts import addMapping
 
-    files = {
-        "QuattrocentoSans": "QuattrocentoSans-Regular.ttf",
-        "QuattrocentoSans-Bold": "QuattrocentoSans-Bold.ttf",
-        "QuattrocentoSans-Italic": "QuattrocentoSans-Italic.ttf",
-        "QuattrocentoSans-BoldItalic": "QuattrocentoSans-BoldItalic.ttf",
-    }
-    all_present = all(
-        os.path.exists(os.path.join(FONT_DIR, fname)) for fname in files.values()
-    )
+    all_present = all(os.path.exists(p) for p in FONT_FILES.values())
     if not all_present:
         return "Helvetica", "Helvetica-Bold"
 
-    for name, fname in files.items():
-        pdfmetrics.registerFont(TTFont(name, os.path.join(FONT_DIR, fname)))
+    pdfmetrics.registerFont(TTFont("QuattrocentoSans", FONT_FILES["regular"]))
+    pdfmetrics.registerFont(TTFont("QuattrocentoSans-Bold", FONT_FILES["bold"]))
+    pdfmetrics.registerFont(TTFont("QuattrocentoSans-Italic", FONT_FILES["italic"]))
+    pdfmetrics.registerFont(TTFont("QuattrocentoSans-BoldItalic", FONT_FILES["boldItalic"]))
     addMapping("QuattrocentoSans", 0, 0, "QuattrocentoSans")
     addMapping("QuattrocentoSans", 1, 0, "QuattrocentoSans-Bold")
     addMapping("QuattrocentoSans", 0, 1, "QuattrocentoSans-Italic")
@@ -413,10 +542,9 @@ def generate_pdf(data, out_path):
     try:
         from reportlab.lib.pagesizes import A4
         from reportlab.lib.units import inch
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.styles import ParagraphStyle
         from reportlab.lib.enums import TA_LEFT, TA_JUSTIFY
         from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image as RLImage, Table, TableStyle
-        from reportlab.lib.utils import ImageReader
     except ImportError:
         raise RuntimeError(
             "The 'reportlab' package is not installed.\n\n"
@@ -427,25 +555,36 @@ def generate_pdf(data, out_path):
         )
 
     base_font, bold_font = _register_pdf_fonts()
+    content_width = A4[0] / inch - 2  # 1in margins each side, in inches
+    col_width = SECOND_COL_TAB_IN
+    leading = BODY_SIZE_PT * LINE_SPACING
 
-    styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
-        "TitleL", parent=styles["Normal"], alignment=TA_LEFT,
-        fontName=bold_font, fontSize=BODY_SIZE_PT,
-        leading=BODY_SIZE_PT * LINE_SPACING, spaceAfter=PARA_SPACE_AFTER_PT,
+        "TitleL", alignment=TA_LEFT, fontName=bold_font, fontSize=BODY_SIZE_PT,
+        leading=leading, spaceAfter=PARA_SPACE_AFTER_PT,
     )
     normal = ParagraphStyle(
-        "NormalL", parent=styles["Normal"], fontName=base_font,
-        fontSize=BODY_SIZE_PT, leading=BODY_SIZE_PT * LINE_SPACING,
-        spaceAfter=PARA_SPACE_AFTER_PT,
+        "NormalL", fontName=base_font, fontSize=BODY_SIZE_PT,
+        leading=leading, spaceAfter=PARA_SPACE_AFTER_PT,
     )
     justify = ParagraphStyle("JustifyL", parent=normal, alignment=TA_JUSTIFY)
+    cell_style = ParagraphStyle("Cell", parent=normal, spaceAfter=0)
 
-    # Tab-like second column via a preserved-space run of non-breaking
-    # spaces sized to roughly reach SECOND_COL_TAB_IN from the margin.
-    def col2(label_run_len_chars):
-        pad = max(4, 46 - label_run_len_chars)
-        return "&nbsp;" * pad
+    def two_col_table(left_html, right_html, second_row=None):
+        """A borderless 2-column row, or 2 rows, using real fixed-width
+        columns so alignment never depends on text length."""
+        rows = [[Paragraph(left_html, cell_style), Paragraph(right_html, cell_style)]]
+        if second_row:
+            rows.append([Paragraph(second_row[0], cell_style), Paragraph(second_row[1], cell_style)])
+        t = Table(rows, colWidths=[col_width * inch, (content_width - col_width) * inch])
+        t.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("TOPPADDING", (0, 0), (-1, -1), 0),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+        ]))
+        return t
 
     story = []
 
@@ -461,23 +600,23 @@ def generate_pdf(data, out_path):
 
     story.append(Paragraph(f"Assignment No: <b>{data['assignment_no']}</b>", normal))
 
-    branch_txt = f"Branch: <b>{data['branch']}</b>"
-    story.append(Paragraph(
-        branch_txt + col2(len(f"Branch: {data['branch']}"))
-        + f"Vertical: <b>{data['vertical']}</b>", normal))
+    story.append(two_col_table(
+        f"Branch: <b>{data['branch']}</b>",
+        f"Vertical: <b>{data['vertical']}</b>",
+    ))
+    story.append(Spacer(1, PARA_SPACE_AFTER_PT))
 
-    sem_txt = f"Semester: <b>{data['semester']}</b>"
-    story.append(Paragraph(
-        sem_txt + col2(len(f"Semester: {data['semester']}"))
-        + f"Division: <b>{data['division']}</b>"
-        + f"<br/>Subject Name: <b>{data['subject_name']}</b>"
-        + col2(len(f"Subject Name: {data['subject_name']}"))
-        + f"Subject Code: <b>{data['subject_code']}</b>", normal))
+    story.append(two_col_table(
+        f"Semester: <b>{data['semester']}</b>",
+        f"Division: <b>{data['division']}</b>",
+        second_row=(
+            f"Subject Name: <b>{data['subject_name']}</b>",
+            f"Subject Code: <b>{data['subject_code']}</b>",
+        ),
+    ))
+    story.append(Spacer(1, PARA_SPACE_AFTER_PT))
 
-    story.append(Paragraph(
-        "I hereby declare that for the assignment / academic activity "
-        "submitted by me, I confirm the following statement(s) by ticking "
-        "(&#9744;) the appropriate box(es):", normal))
+    story.append(Paragraph(DECLARATION_INTRO.replace("\u2610", "&#9744;"), normal))
 
     option_lines = []
     for idx, text in enumerate(DECLARATION_OPTIONS, start=1):
@@ -485,18 +624,13 @@ def generate_pdf(data, out_path):
         option_lines.append(f"{mark} ({idx}) {text}")
     story.append(Paragraph("<br/>".join(option_lines), normal))
 
-    story.append(Paragraph(
-        "I understand that selecting options (4) or (5) indicates unethical "
-        "academic practice and may attract academic penalties, including "
-        "rejection of the assignment or disciplinary action, as per the "
-        "rules of Vidyalankar Institute of Technology, Mumbai. I submit "
-        "this declaration truthfully and accept full responsibility for "
-        "the same.", justify))
+    story.append(Paragraph(ETHICS_WARNING, justify))
 
-    story.append(Paragraph(
-        f"Student Name: <b>{data['student_name']}</b>"
-        + col2(len(f"Student Name: {data['student_name']}"))
-        + f"Roll No.: <b>{data['roll_no']}</b>", normal))
+    story.append(two_col_table(
+        f"Student Name: <b>{data['student_name']}</b>",
+        f"Roll No.: <b>{data['roll_no']}</b>",
+    ))
+    story.append(Spacer(1, 2))
 
     signature_path = data.get("signature_path")
     sig_label = "Signature:"
@@ -504,12 +638,13 @@ def generate_pdf(data, out_path):
     if signature_path:
         processed_sig, tw, th = process_signature_image(signature_path)
         if processed_sig:
-            if not getattr(processed_sig, 'name', None):
+            if not getattr(processed_sig, "name", None):
                 processed_sig.name = "signature.png"
             sig_img = RLImage(processed_sig, width=tw * inch, height=th * inch)
             sig_row = Table(
                 [[Paragraph(sig_label, normal), sig_img, Paragraph(date_label, normal)]],
-                colWidths=[0.75 * inch, tw * inch + 0.15 * inch, 2.5 * inch],
+                colWidths=[0.85 * inch, tw * inch + 0.2 * inch,
+                           (content_width - 0.85 - tw - 0.2) * inch],
             )
             sig_row.setStyle(TableStyle([
                 ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
@@ -519,9 +654,9 @@ def generate_pdf(data, out_path):
             ]))
             story.append(sig_row)
         else:
-            story.append(Paragraph(f"{sig_label}{col2(9)}{date_label}", normal))
+            story.append(two_col_table(sig_label, date_label))
     else:
-        story.append(Paragraph(f"{sig_label}{col2(9)}{date_label}", normal))
+        story.append(two_col_table(sig_label, date_label))
 
     doc = SimpleDocTemplate(
         out_path, pagesize=A4,
@@ -550,7 +685,6 @@ class DeclarationFormApp(tk.Tk):
         self.minsize(520, 500)
         self.resizable(True, True)
 
-        # Main scrollable canvas container
         main_canvas = tk.Canvas(self, highlightthickness=0)
         scrollbar = ttk.Scrollbar(self, orient="vertical", command=main_canvas.yview)
         container = ttk.Frame(main_canvas)
@@ -567,7 +701,6 @@ class DeclarationFormApp(tk.Tk):
         main_canvas.bind("<Configure>", _on_canvas_configure)
         main_canvas.configure(yscrollcommand=scrollbar.set)
 
-        # Enable mousewheel scrolling
         def _on_mousewheel(event):
             main_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
@@ -590,13 +723,18 @@ class DeclarationFormApp(tk.Tk):
             foreground="#555555",
         ).grid(row=row, column=0, columnspan=2, pady=(0, 8)); row += 1
 
-        # Helper list of all (subject_name, subject_code, vertical)
+        if not all(os.path.exists(p) for p in FONT_FILES.values()):
+            ttk.Label(
+                container,
+                text="\u26a0 fonts/ folder incomplete -- outputs will use a fallback font",
+                foreground="#b45309",
+            ).grid(row=row, column=0, columnspan=2, pady=(0, 8)); row += 1
+
         self.all_subjects = []
         for vert, subs in VERTICALS.items():
             for name, code in subs:
                 self.all_subjects.append((name, code, vert))
 
-        # Subject dropdown
         ttk.Label(container, text="Subject:").grid(row=row, column=0, sticky="w", **pad)
         self.subject_var = tk.StringVar()
         self.subject_combo = ttk.Combobox(
@@ -606,28 +744,24 @@ class DeclarationFormApp(tk.Tk):
         self.subject_combo.bind("<<ComboboxSelected>>", self.on_subject_change)
         row += 1
 
-        # Subject code (auto, read-only)
         ttk.Label(container, text="Subject Code:").grid(row=row, column=0, sticky="w", **pad)
         self.code_var = tk.StringVar()
         ttk.Entry(container, textvariable=self.code_var, state="readonly") \
             .grid(row=row, column=1, sticky="ew", **pad)
         row += 1
 
-        # Vertical (auto, read-only)
         ttk.Label(container, text="Vertical:").grid(row=row, column=0, sticky="w", **pad)
         self.vertical_var = tk.StringVar()
         ttk.Entry(container, textvariable=self.vertical_var, state="readonly") \
             .grid(row=row, column=1, sticky="ew", **pad)
         row += 1
 
-        # Assignment / Experiment No
         ttk.Label(container, text="Assignment / Experiment No:").grid(row=row, column=0, sticky="w", **pad)
         self.assignment_var = tk.StringVar(value="Experiment 1")
         ttk.Entry(container, textvariable=self.assignment_var) \
             .grid(row=row, column=1, sticky="ew", **pad)
         row += 1
 
-        # Simple text fields
         fields = [
             ("Student Name", "student_name", "Anirudh Ghanshyam Sarve"),
             ("Roll No.", "roll_no", "24102A0062"),
@@ -643,13 +777,11 @@ class DeclarationFormApp(tk.Tk):
             self.field_vars[key] = var
             row += 1
 
-        # Date
         ttk.Label(container, text="Date:").grid(row=row, column=0, sticky="w", **pad)
         self.date_var = tk.StringVar(value=datetime.date.today().strftime("%d-%m-%Y"))
         ttk.Entry(container, textvariable=self.date_var).grid(row=row, column=1, sticky="ew", **pad)
         row += 1
 
-        # Signature image (optional)
         ttk.Label(container, text="Signature Image:").grid(row=row, column=0, sticky="w", **pad)
         sig_frame = ttk.Frame(container)
         sig_frame.grid(row=row, column=1, sticky="ew", **pad)
@@ -663,7 +795,6 @@ class DeclarationFormApp(tk.Tk):
             .grid(row=0, column=2, padx=(4, 0))
         row += 1
 
-        # Declaration checkboxes
         ttk.Label(container, text="Tick applicable declaration statement(s):") \
             .grid(row=row, column=0, columnspan=2, sticky="w", padx=14, pady=(10, 2)); row += 1
 
@@ -676,7 +807,6 @@ class DeclarationFormApp(tk.Tk):
             self.option_vars.append(var)
             row += 1
 
-        # Buttons
         btn_frame = ttk.Frame(container)
         btn_frame.grid(row=row, column=0, columnspan=2, pady=16)
         ttk.Button(btn_frame, text="Generate DOCX", command=lambda: self.generate(["docx"])) \
@@ -690,18 +820,15 @@ class DeclarationFormApp(tk.Tk):
         ttk.Label(container, textvariable=self.status_var, foreground="green") \
             .grid(row=row + 1, column=0, columnspan=2, pady=(0, 14))
 
-        # init subject list
         if self.all_subjects:
             self.subject_combo.current(0)
             self.on_subject_change()
 
-    # -- helpers ---------------------------------------------------------
     @staticmethod
     def _wrap_text(text, width=68):
         import textwrap
         return "\n".join(textwrap.wrap(text, width=width))
 
-    # -- callbacks -----------------------------------------------------
     def browse_signature(self):
         path = filedialog.askopenfilename(
             title="Choose signature image",
