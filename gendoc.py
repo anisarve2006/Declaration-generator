@@ -330,9 +330,11 @@ def generate_docx(data, out_path):
 
     # --- Title block: left-aligned, bold, same 10pt body size -----------
     p = add_para()
+    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     add_run(p, "Student Undertaking for Ethical Academic Practice", bold=True)
 
     p = add_para()
+    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     add_run(p, "Vidyalankar Institute of Technology, Mumbai", bold=True)
 
     add_para()  # blank spacer line, as in the reference form
