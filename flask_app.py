@@ -144,6 +144,7 @@ def generate():
             "division": division,
             "last_subject_code": subj_code_val,
             "last_subject_name": subj_name_val,
+            "signature_data": sig_draw_data if (sig_draw_data and sig_draw_data.startswith("data:image")) else "",
             "updated_at": datetime.datetime.now().isoformat()
         })
 

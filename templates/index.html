@@ -824,6 +824,23 @@
             if (profile.semester) document.getElementById('semester').value = profile.semester;
             if (profile.division) document.getElementById('division').value = profile.division;
 
+            if (profile.custom_subjects) {
+                let list = Array.isArray(profile.custom_subjects) ? profile.custom_subjects : [];
+                if (typeof profile.custom_subjects === 'string') {
+                    try { list = JSON.parse(profile.custom_subjects); } catch (e) {}
+                }
+                if (list.length > 0) {
+                    let localCustoms = JSON.parse(localStorage.getItem('custom_subjects') || '[]');
+                    list.forEach(cs => {
+                        if (!localCustoms.some(lc => lc.code === cs.code)) {
+                            localCustoms.push(cs);
+                        }
+                    });
+                    localStorage.setItem('custom_subjects', JSON.stringify(localCustoms));
+                    loadCustomSubjects();
+                }
+            }
+
             if (profile.last_subject_code) {
                 const select = document.getElementById("subject_idx");
                 for (let i = 0; i < select.options.length; i++) {
@@ -841,7 +858,7 @@
                     clearCanvas();
                     ctx.drawImage(img, 0, 0);
                     hasDrawn = true;
-                    allStrokes = [];
+                    document.getElementById('signature_draw_data').value = profile.signature_data;
                 };
                 img.src = profile.signature_data;
             }
@@ -854,6 +871,13 @@
             const select = document.getElementById("subject_idx");
             const selectedOpt = select.options[select.selectedIndex];
 
+            let sigData = '';
+            if (hasDrawn) {
+                sigData = canvas.toDataURL('image/png');
+            } else {
+                sigData = document.getElementById('signature_draw_data').value || '';
+            }
+
             const profileData = {
                 roll_no: rollNo,
                 student_name: document.getElementById('student_name').value.trim(),
@@ -862,7 +886,8 @@
                 division: document.getElementById('division').value.trim(),
                 last_subject_code: selectedOpt ? selectedOpt.getAttribute("data-code") : '',
                 last_subject_name: selectedOpt ? selectedOpt.text.trim() : '',
-                signature_data: (activeTab === 'draw' && hasDrawn) ? canvas.toDataURL('image/png') : '',
+                custom_subjects: JSON.parse(localStorage.getItem('custom_subjects') || '[]'),
+                signature_data: sigData,
                 updated_at: new Date().toISOString()
             };
 
@@ -1026,7 +1051,11 @@
             }
         }
 
-        // Init page
+        // Init page: Restore last active roll number on same device if present
+        const savedLastRoll = localStorage.getItem('last_active_roll_no');
+        if (savedLastRoll) {
+            document.getElementById('roll_no').value = savedLastRoll;
+        }
         loadCustomSubjects();
         updateSubjectDetails();
         fetchStudentProfile();
