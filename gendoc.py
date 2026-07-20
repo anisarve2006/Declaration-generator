@@ -325,11 +325,13 @@ def generate_docx(data, out_path):
     # Optional logo
     if os.path.exists(LOGO_FILE):
         p = doc.add_paragraph()
+        p.paragraph_format.space_before = Pt(12)
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.add_run().add_picture(LOGO_FILE, width=Inches(1.2))
 
     # --- Title block: left-aligned, bold, same 10pt body size -----------
     p = add_para()
+    p.paragraph_format.space_before = Pt(18)
     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     add_run(p, "Student Undertaking for Ethical Academic Practice", bold=True)
 
