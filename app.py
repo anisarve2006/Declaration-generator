@@ -363,19 +363,26 @@ st.markdown("""
     }
 
     .main .block-container {
-        max-width: 760px;
+        max-width: 780px;
         padding-top: 2rem;
         padding-bottom: 3rem;
     }
 
-    div[data-testid="stVerticalBlock"] > div {
-        border-radius: 16px;
+    /* Force all labels, text and headings to bright white/slate */
+    label, .stWidgetLabel, [data-testid="stWidgetLabel"] p, [data-testid="stMarkdownContainer"] p {
+        color: #F8FAFC !important;
+        font-weight: 600 !important;
+    }
+
+    h1, h2, h3, h4, h5, h6, .stSubheader {
+        color: #F8FAFC !important;
+        font-weight: 700 !important;
     }
 
     .vit-badge {
         display: inline-block;
-        background: rgba(99, 102, 241, 0.15);
-        color: #818CF8;
+        background: rgba(99, 102, 241, 0.2);
+        color: #A5B4FC;
         font-weight: 700;
         font-size: 0.8rem;
         padding: 0.35rem 0.9rem;
@@ -385,7 +392,7 @@ st.markdown("""
     }
 
     .main-title {
-        color: #F8FAFC;
+        color: #FFFFFF;
         font-weight: 800;
         font-size: 2rem;
         letter-spacing: -0.5px;
@@ -393,9 +400,17 @@ st.markdown("""
     }
 
     .sub-title {
-        color: #94A3B8;
+        color: #CBD5E1;
         font-size: 0.95rem;
         margin-bottom: 1.5rem;
+    }
+
+    /* Inputs background & text styling */
+    input[type="text"], div[data-baseweb="select"] > div {
+        background-color: #F8FAFC !important;
+        color: #0F172A !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
     }
 </style>
 """, unsafe_allow_html=True)
