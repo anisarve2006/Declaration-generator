@@ -118,24 +118,13 @@ def process_signature_image(img_bytes):
 
         out = io.BytesIO()
         smooth_img.save(out, format="PNG")
+        out.name = "signature.png"
         out.seek(0)
-
-        w, h = smooth_img.size
-        aspect = w / float(h) if h > 0 else 2.4
-
-        MAX_H = 0.32
-        MAX_W = 0.80
-
-        target_h = MAX_H
-        target_w = target_h * aspect
-
-        if target_w > MAX_W:
-            target_w = MAX_W
-            target_h = target_w / aspect
-
         return out, target_w, target_h
     except Exception:
         img_bytes.seek(0)
+        if not hasattr(img_bytes, 'name'):
+            img_bytes.name = "signature.png"
         return img_bytes, 0.79, 0.32
 
 # --------------------------------------------------------------------------
@@ -304,8 +293,9 @@ def generate_pdf_bytes(data):
     if sig_bytes:
         processed_sig, tw, th = process_signature_image(sig_bytes)
         if processed_sig:
-            img_reader = ImageReader(processed_sig)
-            sig_img = RLImage(img_reader, width=tw * inch, height=th * inch)
+            if not getattr(processed_sig, 'name', None):
+                processed_sig.name = "signature.png"
+            sig_img = RLImage(processed_sig, width=tw * inch, height=th * inch)
             sig_row = Table(
                 [[Paragraph("Signature:", normal), sig_img, Paragraph(f"Date: <b>{data['date']}</b>", normal)]],
                 colWidths=[0.9 * inch, tw * inch + 0.2 * inch, 2.5 * inch],

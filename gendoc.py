@@ -175,6 +175,7 @@ def process_signature_image(img_path_or_bytes):
 
         out = io.BytesIO()
         smooth_img.save(out, format="PNG")
+        out.name = "signature.png"
         out.seek(0)
 
         w, h = smooth_img.size
@@ -499,8 +500,9 @@ def generate_pdf(data, out_path):
     if signature_path:
         processed_sig, tw, th = process_signature_image(signature_path)
         if processed_sig:
-            img_reader = ImageReader(processed_sig)
-            sig_img = RLImage(img_reader, width=tw * inch, height=th * inch)
+            if not getattr(processed_sig, 'name', None):
+                processed_sig.name = "signature.png"
+            sig_img = RLImage(processed_sig, width=tw * inch, height=th * inch)
             sig_row = Table(
                 [[Paragraph(sig_label, normal), sig_img, Paragraph(date_label, normal)]],
                 colWidths=[0.75 * inch, tw * inch + 0.15 * inch, 2.5 * inch],
