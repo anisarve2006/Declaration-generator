@@ -357,6 +357,7 @@ def generate_docx(data, out_path):
     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     add_run(p, "Vidyalankar Institute of Technology, Mumbai", bold=True)
 
+    add_para()  # blank spacer line, as in the reference form
 
     from docx.oxml import OxmlElement
 
@@ -733,10 +734,11 @@ def generate_pdf(data, out_path):
         img = RLImage(LOGO_FILE, width=1.2 * inch, height=1.2 * inch)
         img.hAlign = "CENTER"
         story.append(img)
-        story.append(Spacer(1, 10))
+        story.append(Spacer(1, 6))
 
     story.append(Paragraph("Student Undertaking for Ethical Academic Practice", title_style))
     story.append(Paragraph("Vidyalankar Institute of Technology, Mumbai", title_style))
+    story.append(Spacer(1, PARA_SPACE_AFTER_PT))
 
     meta_table_rows = [
         [Paragraph(f"Assignment No: <b>{data['assignment_no']}</b>", cell_style), Paragraph("", cell_style)],
@@ -773,6 +775,7 @@ def generate_pdf(data, out_path):
         f"Student Name: <b>{data['student_name']}</b>",
         f"Roll No.: <b>{data['roll_no']}</b>",
     ))
+    story.append(Spacer(1, 2))
 
     signature_path = data.get("signature_path")
     sig_label = "Signature:"
