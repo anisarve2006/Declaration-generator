@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIT Declaration Form Generator</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --secondary: #10B981;
+            --secondary-hover: #059669;
+            --bg-gradient: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #0F172A 100%);
+            --card-bg: rgba(255, 255, 255, 0.96);
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --focus-ring: rgba(79, 70, 229, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wrapper {
+            max-width: 720px;
+            width: 100%;
+        }
+
+        .card {
+            position: relative;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(79, 70, 229, 0.08);
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 13px;
+            padding: 6px 14px;
+            border-radius: 50px;
+            margin-bottom: 12px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-dark);
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .btn-customise-trigger {
+            position: absolute;
+            top: 28px;
+            right: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #EEF2FF;
+            color: var(--primary);
+            border: 1px solid #C7D2FE;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-customise-trigger:hover {
+            background: var(--primary);
+            color: #FFFFFF;
+            transform: rotate(35deg);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 28px 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+            background-color: #F8FAFC;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #FFFFFF;
+            box-shadow: 0 0 0 4px var(--focus-ring);
+        }
+
+        input[readonly] {
+            background-color: #F1F5F9;
+            color: #64748B;
+            font-weight: 600;
+            cursor: not-allowed;
+        }
+
+        .sync-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        .sync-badge.success {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .sync-badge.loading {
+            background: #E0E7FF;
+            color: #3730A3;
+        }
+
+        .sync-badge.info {
+            background: #F1F5F9;
+            color: #475569;
+        }
+
+        .btn-sm-fetch {
+            padding: 0 16px;
+            font-size: 13px;
+            font-weight: 700;
+            background: #EEF2FF;
+            color: var(--primary);
+            border: 1px solid #C7D2FE;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-sm-fetch:hover {
+            background: var(--primary);
+            color: #FFFFFF;
+        }
+
+        /* Modal Overlay & Card */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            max-width: 520px;
+            width: 100%;
+            padding: 28px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .modal-close {
+            background: #F1F5F9;
+            border: none;
+            font-size: 18px;
+            font-weight: 700;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal-close:hover {
+            background: #E2E8F0;
+            color: var(--text-dark);
+        }
+
+        /* Pill Tabs for Signature */
+        .sig-tabs {
+            display: flex;
+            background: #F1F5F9;
+            padding: 4px;
+            border-radius: 12px;
+            gap: 4px;
+            margin-bottom: 14px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: #FFFFFF;
+            color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .sig-panel {
+            display: none;
+        }
+
+        .sig-panel.active {
+            display: block;
+        }
+
+        .canvas-container {
+            position: relative;
+            border: 2px dashed #CBD5E1;
+            border-radius: 14px;
+            background: #FFFFFF;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .canvas-container:hover {
+            border-color: var(--primary);
+        }
+
+        canvas#sig-canvas {
+            display: block;
+            width: 100%;
+            height: 140px;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .canvas-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .btn-clear {
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #FEE2E2;
+            color: #DC2626;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-clear:hover {
+            background: #FCA5A5;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: 1px dashed var(--border-color);
+            border-radius: 10px;
+            width: 100%;
+            background: #F8FAFC;
+        }
+
+        .checkbox-card {
+            background: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            transition: background 0.15s;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(79, 70, 229, 0.04);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            font-weight: 500;
+            font-size: 13.5px;
+            color: #334155;
+            cursor: pointer;
+            line-height: 1.45;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+            color: #FFFFFF;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: #FFFFFF;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+        }
+
+        @media (max-width: 640px) {
+            .card {
+                padding: 24px 18px;
+            }
+
+            .btn-customise-trigger {
+                top: 20px;
+                right: 18px;
+                width: 36px;
+                height: 36px;
+            }
+
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="card">
+            <button type="button" class="btn-customise-trigger" onclick="openCustomiseModal()" title="Customise Profile & Add Subjects" aria-label="Customise Profile & Add Subjects">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            </button>
+            <div class="header">
+                <div class="badge">Vidyalankar Institute of Technology</div>
+                <h1>Ethical Practice Undertaking</h1>
+                <p class="subtitle">Generate & download official declaration forms formatted for VIT submissions</p>
+            </div>
+
+            <form action="/generate" method="POST" enctype="multipart/form-data" onsubmit="prepareFormSubmission()">
+
+                <!-- Section 1: Subject Details -->
+                <div class="section-title">Subject & Academic Vertical</div>
+
+                <div class="form-group">
+                    <label for="subject_idx">Subject Name</label>
+                    <select id="subject_idx" name="subject_idx" onchange="updateSubjectDetails()">
+                        {% for item in subjects %}
+                        <option value="{{ loop.index0 }}" data-code="{{ item.code }}"
+                            data-vertical="{{ item.vertical }}">
+                            {{ item.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Subject Code</label>
+                        <input type="text" id="subject_code" name="subject_code" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Vertical</label>
+                        <input type="text" id="vertical" name="vertical" readonly>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="assignment_no">Assignment / Experiment No.</label>
+                    <input type="text" id="assignment_no" name="assignment_no" value="Experiment 1" required>
+                </div>
+
+                <!-- Section 2: Student Information -->
+                <div class="section-title">
+                    Student Information 
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="roll_no">
+                            Roll No. 
+                            <span id="sync-badge" class="sync-badge" style="display:none;"></span>
+                        </label>
+                        <input type="text" id="roll_no" name="roll_no" value="24102A0062" required 
+                            onblur="fetchStudentProfile()" 
+                            onkeydown="if(event.key === 'Enter'){ event.preventDefault(); fetchStudentProfile(); }" 
+                            oninput="handleRollNoInput()">
+                    </div>
+                    <div class="form-group">
+                        <label for="student_name">Full Name</label>
+                        <input type="text" id="student_name" name="student_name" value="Anirudh Ghanshyam Sarve" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="branch">Branch</label>
+                        <input type="text" id="branch" name="branch" value="CMPN" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="semester">Semester</label>
+                        <input type="text" id="semester" name="semester" value="V" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="division">Division</label>
+                        <input type="text" id="division" name="division" value="A" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Submission Date</label>
+                    <input type="text" id="date" name="date" value="{{ default_date }}" required>
+                </div>
+
+                <!-- Section 3: Signature Pad -->
+                <div class="section-title">Signature Input</div>
+
+                <div class="sig-tabs">
+                    <button type="button" class="tab-btn active" onclick="switchSigTab('draw', event)">Draw Signature</button>
+                    <button type="button" class="tab-btn" onclick="switchSigTab('upload', event)">Upload Image File</button>
+                </div>
+
+                <div id="panel-draw" class="sig-panel active">
+                    <div class="canvas-container">
+                        <canvas id="sig-canvas" width="600" height="140"></canvas>
+                    </div>
+                    <div class="canvas-footer">
+                        <span style="font-size: 12px; color: var(--text-muted);">Use mouse or touch pad to sign</span>
+                        <button type="button" class="btn-clear" onclick="clearCanvas()">Clear Signature</button>
+                    </div>
+                    <input type="hidden" id="signature_draw_data" name="signature_draw_data">
+                </div>
+
+                <div id="panel-upload" class="sig-panel">
+                    <input type="file" id="signature" name="signature" accept="image/*">
+                </div>
+
+                <!-- Section 4: Declarations -->
+                <div class="section-title">Ethical Undertaking Statements</div>
+
+                <div class="checkbox-card">
+                    {% for text in declaration_options %}
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="opt_{{ loop.index }}" name="selected_options"
+                            value="{{ loop.index }}" {% if loop.first %}checked{% endif %}>
+                        <label for="opt_{{ loop.index }}">({{ loop.index }}) {{ text }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Download Actions -->
+                <div class="btn-group">
+                    <button type="submit" name="format" value="docx" class="btn btn-primary">
+                        Download Word (.docx)
+                    </button>
+                    <button type="submit" name="format" value="pdf" class="btn btn-secondary">
+                        Download PDF (.pdf)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CUSTOMISE MODAL DIALOG -->
+    <div id="customise-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">Customise Profile & Subjects</div>
+                <button type="button" class="modal-close" onclick="closeCustomiseModal()">✕</button>
+            </div>
+
+            <!-- Section A: Add Custom Subject -->
+            <div style="margin-bottom: 24px;">
+                <div style="font-weight: 700; font-size: 14px; color: var(--primary); margin-bottom: 10px;">
+                    Add Custom Subject
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label style="font-size: 12px;">Subject Name</label>
+                    <input type="text" id="cust_sub_name" placeholder="e.g. Advanced Deep Learning">
+                </div>
+                <div class="form-row" style="margin-bottom: 10px;">
+                    <div class="form-group">
+                        <label style="font-size: 12px;">Subject Code</label>
+                        <input type="text" id="cust_sub_code" placeholder="e.g. PECE05T">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 12px;">Vertical</label>
+                        <input type="text" id="cust_sub_vert" placeholder="e.g. PC_PEC">
+                    </div>
+                </div>
+                <button type="button" onclick="addCustomSubject()" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 13px;">
+                    Add Subject to Dropdown List
+                </button>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+            <!-- Section B: Save Default Student Profile -->
+            <div>
+                <div style="font-weight: 700; font-size: 14px; color: var(--primary); margin-bottom: 10px;">
+                    Save Student Profile Defaults
+                </div>
+                <div class="form-row" style="margin-bottom: 10px;">
+                    <div class="form-group">
+                        <label style="font-size: 12px;">Roll No.</label>
+                        <input type="text" id="cust_roll_no" placeholder="24102A0062">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 12px;">Full Name</label>
+                        <input type="text" id="cust_student_name" placeholder="Anirudh Ghanshyam Sarve">
+                    </div>
+                </div>
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label style="font-size: 12px;">Branch</label>
+                        <input type="text" id="cust_branch" placeholder="CMPN">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 12px;">Semester</label>
+                        <input type="text" id="cust_semester" placeholder="V">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 12px;">Division</label>
+                        <input type="text" id="cust_division" placeholder="A">
+                    </div>
+                </div>
+                <button type="button" onclick="saveCustomProfileDefaults()" class="btn btn-secondary" style="width: 100%; padding: 10px; font-size: 13px;">
+                    Save Profile Defaults
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- MODAL LOGIC ---
+        function openCustomiseModal() {
+            document.getElementById('cust_roll_no').value = document.getElementById('roll_no').value;
+            document.getElementById('cust_student_name').value = document.getElementById('student_name').value;
+            document.getElementById('cust_branch').value = document.getElementById('branch').value;
+            document.getElementById('cust_semester').value = document.getElementById('semester').value;
+            document.getElementById('cust_division').value = document.getElementById('division').value;
+            document.getElementById('customise-modal').classList.add('open');
+        }
+
+        function closeCustomiseModal() {
+            document.getElementById('customise-modal').classList.remove('open');
+        }
+
+        function addCustomSubject() {
+            const name = document.getElementById('cust_sub_name').value.trim();
+            const code = document.getElementById('cust_sub_code').value.trim();
+            const vert = document.getElementById('cust_sub_vert').value.trim() || 'CUSTOM';
+
+            if (!name || !code) {
+                alert("Please enter both Subject Name and Subject Code.");
+                return;
+            }
+
+            const select = document.getElementById("subject_idx");
+            const option = document.createElement("option");
+            option.value = select.options.length;
+            option.text = name;
+            option.setAttribute("data-code", code);
+            option.setAttribute("data-vertical", vert);
+            select.appendChild(option);
+            select.selectedIndex = select.options.length - 1;
+            updateSubjectDetails();
+
+            // Store custom subject locally
+            let customSubjects = JSON.parse(localStorage.getItem('custom_subjects') || '[]');
+            customSubjects.push({ name, code, vertical: vert });
+            localStorage.setItem('custom_subjects', JSON.stringify(customSubjects));
+
+            document.getElementById('cust_sub_name').value = '';
+            document.getElementById('cust_sub_code').value = '';
+            document.getElementById('cust_sub_vert').value = '';
+            closeCustomiseModal();
+
+            alert(`Subject "${name}" (${code}) added successfully.`);
+        }
+
+        function loadCustomSubjects() {
+            const customSubjects = JSON.parse(localStorage.getItem('custom_subjects') || '[]');
+            if (customSubjects.length === 0) return;
+
+            const select = document.getElementById("subject_idx");
+            customSubjects.forEach(s => {
+                const option = document.createElement("option");
+                option.value = select.options.length;
+                option.text = s.name;
+                option.setAttribute("data-code", s.code);
+                option.setAttribute("data-vertical", s.vertical || 'CUSTOM');
+                select.appendChild(option);
+            });
+        }
+
+        function saveCustomProfileDefaults() {
+            document.getElementById('roll_no').value = document.getElementById('cust_roll_no').value.trim();
+            document.getElementById('student_name').value = document.getElementById('cust_student_name').value.trim();
+            document.getElementById('branch').value = document.getElementById('cust_branch').value.trim();
+            document.getElementById('semester').value = document.getElementById('cust_semester').value.trim();
+            document.getElementById('division').value = document.getElementById('cust_division').value.trim();
+
+            saveStudentProfile();
+            closeCustomiseModal();
+            alert("Student profile defaults saved successfully.");
+        }
+
+        // --- LOCALSTORAGE & BACKEND API SYNC LOGIC ---
+        async function fetchStudentProfile() {
+            const rollNo = document.getElementById('roll_no').value.trim();
+            const badge = document.getElementById('sync-badge');
+
+            if (!rollNo) {
+                badge.style.display = 'none';
+                return;
+            }
+
+            badge.style.display = 'inline-block';
+            badge.textContent = 'Checking...';
+            badge.className = 'sync-badge loading';
+
+            let loaded = false;
+
+            // 1. Check LocalStorage first (Instant local fetch)
+            const localData = localStorage.getItem('student_profile_' + rollNo);
+            if (localData) {
+                try {
+                    const profile = JSON.parse(localData);
+                    applyProfileToForm(profile);
+                    badge.style.display = 'inline-block';
+                    badge.textContent = 'Loaded (LocalStorage)';
+                    badge.className = 'sync-badge success';
+                    loaded = true;
+                } catch (e) {
+                    console.error('LocalStorage parse error:', e);
+                }
+            }
+
+            // 2. Fetch from secure server API endpoint (Supabase)
+            try {
+                const resp = await fetch('/api/student/' + encodeURIComponent(rollNo));
+                if (resp.ok) {
+                    const resData = await resp.json();
+                    if (resData.success && resData.profile) {
+                        applyProfileToForm(resData.profile);
+                        localStorage.setItem('student_profile_' + rollNo, JSON.stringify(resData.profile));
+                        badge.style.display = 'inline-block';
+                        badge.textContent = 'Synced';
+                        badge.className = 'sync-badge success';
+                        loaded = true;
+                    }
+                }
+            } catch (err) {
+                console.warn('API query note:', err);
+            }
+
+            if (!loaded) {
+                badge.style.display = 'none';
+            }
+        }
+
+        function applyProfileToForm(profile) {
+            if (profile.student_name) document.getElementById('student_name').value = profile.student_name;
+            if (profile.branch) document.getElementById('branch').value = profile.branch;
+            if (profile.semester) document.getElementById('semester').value = profile.semester;
+            if (profile.division) document.getElementById('division').value = profile.division;
+
+            if (profile.last_subject_code) {
+                const select = document.getElementById("subject_idx");
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].getAttribute("data-code") === profile.last_subject_code) {
+                        select.selectedIndex = i;
+                        updateSubjectDetails();
+                        break;
+                    }
+                }
+            }
+
+            if (profile.signature_data && profile.signature_data.startsWith('data:image')) {
+                const img = new Image();
+                img.onload = function () {
+                    clearCanvas();
+                    ctx.drawImage(img, 0, 0);
+                    hasDrawn = true;
+                    allStrokes = [];
+                };
+                img.src = profile.signature_data;
+            }
+        }
+
+        async function saveStudentProfile() {
+            const rollNo = document.getElementById('roll_no').value.trim();
+            if (!rollNo) return;
+
+            const select = document.getElementById("subject_idx");
+            const selectedOpt = select.options[select.selectedIndex];
+
+            const profileData = {
+                roll_no: rollNo,
+                student_name: document.getElementById('student_name').value.trim(),
+                branch: document.getElementById('branch').value.trim(),
+                semester: document.getElementById('semester').value.trim(),
+                division: document.getElementById('division').value.trim(),
+                last_subject_code: selectedOpt ? selectedOpt.getAttribute("data-code") : '',
+                last_subject_name: selectedOpt ? selectedOpt.text.trim() : '',
+                signature_data: (activeTab === 'draw' && hasDrawn) ? canvas.toDataURL('image/png') : '',
+                updated_at: new Date().toISOString()
+            };
+
+            // Save to LocalStorage
+            localStorage.setItem('student_profile_' + rollNo, JSON.stringify(profileData));
+            localStorage.setItem('last_active_roll_no', rollNo);
+
+            // Save via secure server API endpoint
+            try {
+                await fetch('/api/student', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(profileData)
+                });
+            } catch (err) {
+                console.error('API save error:', err);
+            }
+        }
+
+        let rollNoTimer = null;
+        function handleRollNoInput() {
+            clearTimeout(rollNoTimer);
+            rollNoTimer = setTimeout(fetchStudentProfile, 600);
+        }
+
+        // --- FORM LOGIC ---
+        function updateSubjectDetails() {
+            const select = document.getElementById("subject_idx");
+            if (select.options.length === 0) return;
+            const selectedOpt = select.options[select.selectedIndex];
+            document.getElementById("subject_code").value = selectedOpt.getAttribute("data-code");
+            document.getElementById("vertical").value = selectedOpt.getAttribute("data-vertical");
+        }
+
+        let activeTab = 'draw';
+        function switchSigTab(tab, event) {
+            activeTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.sig-panel').forEach(p => p.classList.remove('active'));
+
+            event.target.classList.add('active');
+            if (tab === 'draw') {
+                document.getElementById('panel-draw').classList.add('active');
+            } else {
+                document.getElementById('panel-upload').classList.add('active');
+            }
+        }
+
+        // Canvas drawing pad logic
+        const canvas = document.getElementById('sig-canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let hasDrawn = false;
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = 140;
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#0F172A';
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
+
+        let allStrokes = [];
+        let currentStroke = [];
+
+        function startDrawing(e) {
+            isDrawing = true;
+            hasDrawn = true;
+            currentStroke = [getPos(e)];
+            redrawAllStrokes();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            currentStroke.push(getPos(e));
+            redrawAllStrokes();
+        }
+
+        function stopDrawing() {
+            if (isDrawing && currentStroke.length > 0) {
+                allStrokes.push(currentStroke);
+                currentStroke = [];
+                redrawAllStrokes();
+            }
+            isDrawing = false;
+        }
+
+        function drawStroke(pts) {
+            if (!pts || pts.length === 0) return;
+            if (pts.length === 1) {
+                ctx.beginPath();
+                ctx.arc(pts[0].x, pts[0].y, ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.fill();
+                return;
+            }
+            if (pts.length === 2) {
+                ctx.beginPath();
+                ctx.moveTo(pts[0].x, pts[0].y);
+                ctx.lineTo(pts[1].x, pts[1].y);
+                ctx.stroke();
+                return;
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length - 2; i++) {
+                const xc = (pts[i].x + pts[i + 1].x) / 2;
+                const yc = (pts[i].y + pts[i + 1].y) / 2;
+                ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
+            }
+            const lastSec = pts[pts.length - 2];
+            const lastPt = pts[pts.length - 1];
+            ctx.quadraticCurveTo(lastSec.x, lastSec.y, lastPt.x, lastPt.y);
+            ctx.stroke();
+        }
+
+        function redrawAllStrokes() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F172A';
+            for (let i = 0; i < allStrokes.length; i++) {
+                drawStroke(allStrokes[i]);
+            }
+            if (currentStroke.length > 0) {
+                drawStroke(currentStroke);
+            }
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            allStrokes = [];
+            currentStroke = [];
+            hasDrawn = false;
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+
+        function prepareFormSubmission() {
+            saveStudentProfile();
+            if (activeTab === 'draw' && hasDrawn) {
+                document.getElementById('signature_draw_data').value = canvas.toDataURL('image/png');
+            } else {
+                document.getElementById('signature_draw_data').value = '';
+            }
+        }
+
+        // Init page
+        loadCustomSubjects();
+        updateSubjectDetails();
+        fetchStudentProfile();
+    </script>
+</body>
+
+</html>
