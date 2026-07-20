@@ -152,8 +152,12 @@ def process_signature_image(img_path_or_bytes):
         else:
             img_work = img
 
+        # Composite onto solid white background to convert transparent pixels (A=0) to white (255)
+        white_bg = Image.new("RGBA", img_work.size, (255, 255, 255, 255))
+        white_bg.alpha_composite(img_work)
+
         # 2. Extract luminance & enhance contrast to remove background noise
-        gray = img_work.convert("L")
+        gray = white_bg.convert("L")
         gray_enhanced = ImageEnhance.Contrast(gray).enhance(2.2)
 
         # 3. Create smooth opacity mask

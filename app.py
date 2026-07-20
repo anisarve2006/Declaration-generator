@@ -100,7 +100,11 @@ def process_signature_image(img_bytes):
         else:
             img_work = img
 
-        gray = img_work.convert("L")
+        # Composite onto solid white background to convert transparent pixels (A=0) to white (255)
+        white_bg = Image.new("RGBA", img_work.size, (255, 255, 255, 255))
+        white_bg.alpha_composite(img_work)
+
+        gray = white_bg.convert("L")
         gray_enhanced = ImageEnhance.Contrast(gray).enhance(2.2)
 
         mask = Image.eval(gray_enhanced, lambda v: 255 - v if v < 225 else 0)
