@@ -91,8 +91,25 @@ LINE_SPACING = 1.25                # Comfortable line spacing
 SECOND_COL_TAB_IN = 3.5            # tab stop for the 2nd field column
 SIGNATURE_MAX_W_IN = 719394 / 914400.0   # from reference form's embedded size
 SIGNATURE_MAX_H_IN = 295465 / 914400.0   # (0.7867in x 0.3231in)
-CHECK_MARK = "\u2713"               # checked
-BOX_EMPTY = "\u2610"                # unchecked
+
+# NOTE ON CHECKBOX GLYPHS
+# ------------------------
+# The reference form uses the Unicode characters U+2713 (check mark)
+# and U+2610 (empty box). These render fine in the DOCX because Word
+# automatically falls back to a system font for any glyph missing
+# from Quattrocento Sans. reportlab (used for the PDF) does NOT do
+# automatic font substitution -- if a glyph isn't in the currently
+# selected font, it silently draws nothing. Since Quattrocento Sans
+# (and plain Helvetica, the no-font fallback) do not contain U+2713 /
+# U+2610, those marks were invisible in the PDF. To fix this reliably
+# for ANY font, plain ASCII bracket markers are used instead -- every
+# font contains these characters, so the marks are guaranteed to show
+# up. The DOCX keeps the nicer Unicode glyphs since Word already
+# renders them correctly.
+CHECK_MARK = "\u2713"               # checked (DOCX)
+BOX_EMPTY = "\u2610"                # unchecked (DOCX)
+CHECK_MARK_PDF = "[✓]"              # checked (PDF -- guaranteed to render)
+BOX_EMPTY_PDF = "[ ]"               # unchecked (PDF -- guaranteed to render)
 
 FONT_FILES = {
     "regular": os.path.join(FONT_DIR, "QuattrocentoSans-regular.ttf"),
@@ -330,20 +347,23 @@ def generate_docx(data, out_path):
         p.add_run().add_picture(LOGO_FILE, width=Inches(1.2))
 
     # --- Title block: left-aligned, bold, same 10pt body size -----------
+    # Extra breathing room above the title so it doesn't hug the top
+    # margin (in addition to the 1in page margin already set above).
     p = add_para()
-    p.paragraph_format.space_before = Pt(18)
+    p.paragraph_format.space_before = Pt(36)
     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     add_run(p, "Student Undertaking for Ethical Academic Practice", bold=True)
 
-    p = add_para()
     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     add_run(p, "Vidyalankar Institute of Technology, Mumbai", bold=True)
 
-    add_para()  # blank spacer line, as in the reference form
 
     from docx.oxml import OxmlElement
 
     def remove_table_borders(table):
+        # Explicitly clear any table style so no style-level borders
+        # or shading can leak in, then force every border edge off.
+        table.style = None
         tblPr = table._element.xpath('w:tblPr')
         if tblPr:
             tblBorders = tblPr[0].xpath('w:tblBorders')
@@ -353,6 +373,9 @@ def generate_docx(data, out_path):
             for b in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
                 node = OxmlElement(f'w:{b}')
                 node.set(qn('w:val'), 'none')
+                node.set(qn('w:sz'), '0')
+                node.set(qn('w:space'), '0')
+                node.set(qn('w:color'), 'auto')
                 borders.append(node)
             tblPr[0].append(borders)
 
@@ -376,6 +399,25 @@ def generate_docx(data, out_path):
             ind.set(qn('w:type'), 'dxa')
             tblPr[0].append(ind)
 
+        # Belt-and-braces: also strip any per-cell borders that may
+        # have been inherited, since cell-level borders take priority
+        # over table-level borders.
+        for row in table.rows:
+            for cell in row.cells:
+                tcPr = cell._element.get_or_add_tcPr()
+                tcBorders = tcPr.find(qn('w:tcBorders'))
+                if tcBorders is not None:
+                    tcPr.remove(tcBorders)
+                tcBorders = OxmlElement('w:tcBorders')
+                for b in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+                    node = OxmlElement(f'w:{b}')
+                    node.set(qn('w:val'), 'none')
+                    node.set(qn('w:sz'), '0')
+                    node.set(qn('w:space'), '0')
+                    node.set(qn('w:color'), 'auto')
+                    tcBorders.append(node)
+                tcPr.append(tcBorders)
+
     def zero_cell_left_margin(cell):
         tcPr = cell._element.get_or_add_tcPr()
         tcMar = tcPr.xpath('w:tcMar')
@@ -388,6 +430,27 @@ def generate_docx(data, out_path):
         mar.append(left_m)
         tcPr.append(mar)
 
+    def _fill_cell(cell, label_val_pair):
+        """Fill a table cell's first paragraph. If label_val_pair is
+        None (an intentionally empty cell), still add an empty run
+        with the document's font explicitly applied, so the empty
+        cell's row height matches the sibling cell instead of falling
+        back to Word's default Normal-style row height. This is what
+        caused the oversized gap after the 'Assignment No' row."""
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        p.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
+        p.paragraph_format.line_spacing = LINE_SPACING
+        if label_val_pair:
+            lbl, val = label_val_pair
+            add_run(p, lbl, bold=False)
+            if val:
+                add_run(p, val, bold=True)
+        else:
+            r = p.add_run("")
+            set_font(r)
+        return p
+
     def add_docx_2col_table(rows_tuples, col1_in=3.5, col2_in=2.77):
         table = doc.add_table(rows=len(rows_tuples), cols=2)
         remove_table_borders(table)
@@ -395,29 +458,12 @@ def generate_docx(data, out_path):
             c0 = table.cell(i, 0)
             c0.width = Inches(col1_in)
             zero_cell_left_margin(c0)
-            p0 = c0.paragraphs[0]
-            p0.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            p0.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
-            p0.paragraph_format.line_spacing = LINE_SPACING
-            left_data = row[0]
-            if left_data:
-                lbl, val = left_data
-                add_run(p0, lbl, bold=False)
-                if val:
-                    add_run(p0, val, bold=True)
+            _fill_cell(c0, row[0])
 
             c1 = table.cell(i, 1)
             c1.width = Inches(col2_in)
-            p1 = c1.paragraphs[0]
-            p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            p1.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
-            p1.paragraph_format.line_spacing = LINE_SPACING
             right_data = row[1] if len(row) > 1 else None
-            if right_data:
-                lbl, val = right_data
-                add_run(p1, lbl, bold=False)
-                if val:
-                    add_run(p1, val, bold=True)
+            _fill_cell(c1, right_data)
         return table
 
     # --- Metadata Borderless Table ---
@@ -687,11 +733,10 @@ def generate_pdf(data, out_path):
         img = RLImage(LOGO_FILE, width=1.2 * inch, height=1.2 * inch)
         img.hAlign = "CENTER"
         story.append(img)
-        story.append(Spacer(1, 6))
+        story.append(Spacer(1, 10))
 
     story.append(Paragraph("Student Undertaking for Ethical Academic Practice", title_style))
     story.append(Paragraph("Vidyalankar Institute of Technology, Mumbai", title_style))
-    story.append(Spacer(1, PARA_SPACE_AFTER_PT))
 
     meta_table_rows = [
         [Paragraph(f"Assignment No: <b>{data['assignment_no']}</b>", cell_style), Paragraph("", cell_style)],
@@ -710,11 +755,15 @@ def generate_pdf(data, out_path):
     story.append(t_meta)
     story.append(Spacer(1, PARA_SPACE_AFTER_PT))
 
-    story.append(Paragraph(DECLARATION_INTRO.replace("\u2610", "&#9744;"), normal))
+    # Use the plain-ASCII box marker here too -- Unicode U+2610 is not
+    # guaranteed to exist in the active PDF font (see CHECK_MARK_PDF
+    # note above), so it could render as an invisible/missing glyph.
+    intro_pdf = DECLARATION_INTRO.replace("(\u2610)", "([ ])")
+    story.append(Paragraph(intro_pdf, normal))
 
     option_lines = []
     for idx, text in enumerate(DECLARATION_OPTIONS, start=1):
-        mark = "&#10003;" if idx in data["selected_options"] else "&#9744;"
+        mark = CHECK_MARK_PDF if idx in data["selected_options"] else BOX_EMPTY_PDF
         option_lines.append(f"{mark} ({idx}) {text}")
     story.append(Paragraph("<br/>".join(option_lines), normal))
 
@@ -724,7 +773,6 @@ def generate_pdf(data, out_path):
         f"Student Name: <b>{data['student_name']}</b>",
         f"Roll No.: <b>{data['roll_no']}</b>",
     ))
-    story.append(Spacer(1, 2))
 
     signature_path = data.get("signature_path")
     sig_label = "Signature:"
