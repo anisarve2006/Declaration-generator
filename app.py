@@ -640,22 +640,26 @@ else:
     st.subheader("📥 Download Generated Declaration Form")
     col_dl1, col_dl2 = st.columns(2)
 
-    with col_dl1:
+    with st.spinner("✨ Rendering official declaration layout & embedding signature..."):
         docx_buffer = generate_docx_bytes(form_data)
+        pdf_buffer = generate_pdf_bytes(form_data)
+
+    with col_dl1:
         st.download_button(
-            label="📄 Download Word (.docx)",
+            label="📝 Download Word (.docx)",
             data=docx_buffer,
             file_name=f"{base_filename}.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            use_container_width=True
+            use_container_width=True,
+            on_click=lambda: st.toast("✅ .DOCX Declaration Form Downloaded!", icon="📝")
         )
 
     with col_dl2:
-        pdf_buffer = generate_pdf_bytes(form_data)
         st.download_button(
-            label="📕 Download PDF (.pdf)",
+            label="📄 Download PDF (.pdf)",
             data=pdf_buffer,
             file_name=f"{base_filename}.pdf",
             mime="application/pdf",
-            use_container_width=True
+            use_container_width=True,
+            on_click=lambda: st.toast("✅ .PDF Declaration Form Downloaded!", icon="📄")
         )

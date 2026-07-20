@@ -373,6 +373,34 @@
             background: var(--secondary-hover);
         }
 
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .btn-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2.5px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            border-top-color: #FFFFFF;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .btn.btn-loading {
+            opacity: 0.88;
+            pointer-events: none;
+            transform: scale(0.97);
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn.btn-success-anim {
+            background: #059669 !important;
+            transform: scale(1.02);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
         @media (max-width: 600px) {
             .card {
                 padding: 24px 18px;
@@ -526,10 +554,10 @@
 
                 <!-- Action Buttons -->
                 <div class="btn-group">
-                    <button type="submit" onclick="document.getElementById('format').value='docx'" class="btn btn-primary">
+                    <button type="submit" id="btn-docx" onclick="document.getElementById('format').value='docx'; triggerButtonTransition(this, '.DOCX');" class="btn btn-primary">
                         📝 Generate .DOCX
                     </button>
-                    <button type="submit" onclick="document.getElementById('format').value='pdf'" class="btn btn-secondary">
+                    <button type="submit" id="btn-pdf" onclick="document.getElementById('format').value='pdf'; triggerButtonTransition(this, '.PDF');" class="btn btn-secondary">
                         📄 Generate .PDF
                     </button>
                 </div>
@@ -958,6 +986,23 @@
         canvas.addEventListener('touchstart', startDrawing);
         canvas.addEventListener('touchmove', draw);
         canvas.addEventListener('touchend', stopDrawing);
+
+        function triggerButtonTransition(btn, formatName) {
+            const originalHTML = btn.innerHTML;
+            btn.classList.add('btn-loading');
+            btn.innerHTML = `<span class="btn-spinner"></span> Generating ${formatName}...`;
+
+            setTimeout(() => {
+                btn.classList.remove('btn-loading');
+                btn.classList.add('btn-success-anim');
+                btn.innerHTML = `✅ ${formatName} Downloaded!`;
+
+                setTimeout(() => {
+                    btn.classList.remove('btn-success-anim');
+                    btn.innerHTML = originalHTML;
+                }, 2500);
+            }, 1200);
+        }
 
         function prepareFormSubmission() {
             saveStudentProfile();
