@@ -49,77 +49,167 @@
         .card {
             position: relative;
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
+            border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 30px;
         }
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(79, 70, 229, 0.08);
+        .header .badge {
+            display: inline-block;
+            background: rgba(79, 70, 229, 0.1);
             color: var(--primary);
             font-weight: 700;
             font-size: 13px;
             padding: 6px 14px;
             border-radius: 50px;
+            letter-spacing: 0.5px;
             margin-bottom: 12px;
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
         }
 
-        h1 {
-            font-size: 28px;
+        .header h1 {
+            font-size: 26px;
             font-weight: 800;
             color: var(--text-dark);
             letter-spacing: -0.5px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
-        .subtitle {
-            color: var(--text-muted);
+        .header p.subtitle {
             font-size: 14px;
-            line-height: 1.5;
+            color: var(--text-muted);
         }
 
         .btn-customise-trigger {
             position: absolute;
-            top: 28px;
-            right: 28px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            top: 24px;
+            right: 24px;
+            background: #F1F5F9;
+            color: #475569;
+            border: 1px solid #E2E8F0;
+            border-radius: 50%;
             width: 40px;
             height: 40px;
-            background: #EEF2FF;
-            color: var(--primary);
-            border: 1px solid #C7D2FE;
-            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
         }
 
         .btn-customise-trigger:hover {
-            background: var(--primary);
-            color: #FFFFFF;
-            transform: rotate(35deg);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            background: #E2E8F0;
+            color: #0F172A;
+            transform: rotate(30deg);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            padding: 28px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 12px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #94A3B8;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .form-group input[type="text"],
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-dark);
+            background: #F8FAFC;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group select:focus {
+            background: #FFFFFF;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--focus-ring);
+        }
+
+        .form-group input[readonly] {
+            background: #F1F5F9;
+            color: #64748B;
+            cursor: not-allowed;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
         }
 
         .section-title {
             font-size: 15px;
             font-weight: 700;
             color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 28px 0 16px 0;
+            margin: 24px 0 14px 0;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -132,191 +222,77 @@
             background: var(--border-color);
         }
 
-        .form-group {
-            margin-bottom: 18px;
+        .checkbox-group {
+            background: #F8FAFC;
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            font-size: 13px;
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 13.5px;
             color: #334155;
-            margin-bottom: 6px;
+            line-height: 1.4;
         }
 
-        input[type="text"],
-        input[type="url"],
-        select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-dark);
-            background-color: #F8FAFC;
-            transition: all 0.2s ease;
-            font-family: inherit;
+        .checkbox-item:last-child {
+            margin-bottom: 0;
         }
 
-        input[type="text"]:focus,
-        input[type="url"]:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--primary);
-            background-color: #FFFFFF;
-            box-shadow: 0 0 0 4px var(--focus-ring);
-        }
-
-        input[readonly] {
-            background-color: #F1F5F9;
-            color: #64748B;
-            font-weight: 600;
-            cursor: not-allowed;
+        .checkbox-item input[type="checkbox"] {
+            margin-top: 2px;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            cursor: pointer;
         }
 
         .sync-badge {
+            display: inline-block;
             font-size: 11px;
             font-weight: 700;
             padding: 2px 8px;
-            border-radius: 20px;
+            border-radius: 12px;
             margin-left: 6px;
-            vertical-align: middle;
+        }
+
+        .sync-badge.loading {
+            background: #FEF3C7;
+            color: #D97706;
         }
 
         .sync-badge.success {
             background: #D1FAE5;
-            color: #065F46;
+            color: #059669;
         }
 
-        .sync-badge.loading {
-            background: #E0E7FF;
-            color: #3730A3;
-        }
-
-        .sync-badge.info {
-            background: #F1F5F9;
-            color: #475569;
-        }
-
-        .btn-sm-fetch {
-            padding: 0 16px;
-            font-size: 13px;
-            font-weight: 700;
-            background: #EEF2FF;
-            color: var(--primary);
-            border: 1px solid #C7D2FE;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .btn-sm-fetch:hover {
-            background: var(--primary);
-            color: #FFFFFF;
-        }
-
-        /* Modal Overlay & Card */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(8px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .modal-overlay.open {
-            display: flex;
-        }
-
-        .modal-card {
-            background: #FFFFFF;
-            border-radius: 20px;
-            max-width: 520px;
-            width: 100%;
-            padding: 28px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-            animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes modalPop {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--text-dark);
-        }
-
-        .modal-close {
-            background: #F1F5F9;
-            border: none;
-            font-size: 18px;
-            font-weight: 700;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            color: var(--text-muted);
-        }
-
-        .modal-close:hover {
-            background: #E2E8F0;
-            color: var(--text-dark);
-        }
-
-        /* Pill Tabs for Signature */
         .sig-tabs {
             display: flex;
-            background: #F1F5F9;
-            padding: 4px;
-            border-radius: 12px;
-            gap: 4px;
-            margin-bottom: 14px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
         .tab-btn {
             flex: 1;
-            padding: 8px 14px;
-            border: none;
-            background: transparent;
-            border-radius: 8px;
+            padding: 8px;
             font-size: 13px;
             font-weight: 600;
-            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            background: #F8FAFC;
+            color: #64748B;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
 
         .tab-btn.active {
-            background: #FFFFFF;
-            color: var(--primary);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+            background: var(--primary);
+            color: #FFFFFF;
+            border-color: var(--primary);
         }
 
         .sig-panel {
@@ -328,149 +304,82 @@
         }
 
         .canvas-container {
-            position: relative;
-            border: 2px dashed #CBD5E1;
-            border-radius: 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
             background: #FFFFFF;
-            overflow: hidden;
-            transition: border-color 0.2s;
+            position: relative;
+            margin-bottom: 8px;
         }
 
-        .canvas-container:hover {
-            border-color: var(--primary);
-        }
-
-        canvas#sig-canvas {
+        canvas {
             display: block;
             width: 100%;
             height: 140px;
+            border-radius: 10px;
             cursor: crosshair;
-            touch-action: none;
         }
 
-        .canvas-footer {
+        .canvas-actions {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 8px;
+            justify-content: flex-end;
+            margin-bottom: 14px;
         }
 
         .btn-clear {
-            padding: 6px 12px;
+            background: none;
+            border: none;
+            color: #EF4444;
             font-size: 12px;
             font-weight: 600;
-            background: #FEE2E2;
-            color: #DC2626;
-            border: none;
-            border-radius: 6px;
             cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-clear:hover {
-            background: #FCA5A5;
-        }
-
-        input[type="file"] {
-            padding: 10px;
-            border: 1px dashed var(--border-color);
-            border-radius: 10px;
-            width: 100%;
-            background: #F8FAFC;
-        }
-
-        .checkbox-card {
-            background: #F8FAFC;
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 10px 12px;
-            border-radius: 8px;
-            transition: background 0.15s;
-        }
-
-        .checkbox-item:hover {
-            background: rgba(79, 70, 229, 0.04);
-        }
-
-        .checkbox-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            margin-top: 2px;
-            accent-color: var(--primary);
-            cursor: pointer;
-        }
-
-        .checkbox-item label {
-            margin: 0;
-            font-weight: 500;
-            font-size: 13.5px;
-            color: #334155;
-            cursor: pointer;
-            line-height: 1.45;
         }
 
         .btn-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-top: 32px;
+            gap: 14px;
+            margin-top: 28px;
         }
 
         .btn {
-            display: inline-flex;
+            padding: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: inherit;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            color: #FFFFFF;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
-            color: #FFFFFF;
+            background: var(--primary);
         }
 
         .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+            background: var(--primary-hover);
         }
 
         .btn-secondary {
-            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-            color: #FFFFFF;
+            background: var(--secondary);
         }
 
         .btn-secondary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+            background: var(--secondary-hover);
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 600px) {
             .card {
                 padding: 24px 18px;
             }
 
-            .btn-customise-trigger {
-                top: 20px;
-                right: 18px;
-                width: 36px;
-                height: 36px;
+            .form-row {
+                grid-template-columns: 1fr;
             }
 
             .btn-group {
@@ -495,7 +404,8 @@
                 <p class="subtitle">Generate & download official declaration forms formatted for VIT submissions</p>
             </div>
 
-            <form action="/generate" method="POST" enctype="multipart/form-data" onsubmit="prepareFormSubmission()">
+            <form id="mainForm" action="/generate" method="POST" enctype="multipart/form-data" onsubmit="prepareFormSubmission()">
+                <input type="hidden" name="format" id="format" value="docx">
 
                 <!-- Section 1: Subject Details -->
                 <div class="section-title">Subject & Academic Vertical</div>
@@ -503,12 +413,7 @@
                 <div class="form-group">
                     <label for="subject_idx">Subject Name</label>
                     <select id="subject_idx" name="subject_idx" onchange="updateSubjectDetails()">
-                        {% for item in subjects %}
-                        <option value="{{ loop.index0 }}" data-code="{{ item.code }}"
-                            data-vertical="{{ item.vertical }}">
-                            {{ item.name }}
-                        </option>
-                        {% endfor %}
+                        <!-- Dynamically populated or default -->
                     </select>
                 </div>
 
@@ -563,121 +468,114 @@
                         <label for="division">Division</label>
                         <input type="text" id="division" name="division" value="A" required>
                     </div>
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="text" id="date" name="date" value="" required>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="date">Submission Date</label>
-                    <input type="text" id="date" name="date" value="{{ default_date }}" required>
+                <!-- Section 3: Declaration Checkboxes -->
+                <div class="section-title">Declaration Terms</div>
+
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="selected_options" value="1" id="opt1" checked>
+                        <label for="opt1">(1) I have completed the assignment / academic activity independently.</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="selected_options" value="2" id="opt2" checked>
+                        <label for="opt2">(2) I have used AI tools solely for assistance (e.g. proofreading, debugging, understanding concepts) and not for generating the core submission content.</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="selected_options" value="3" id="opt3" checked>
+                        <label for="opt3">(3) I have properly cited and acknowledged all sources, tools, and assistance used in completing this work.</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="selected_options" value="4" id="opt4">
+                        <label for="opt4">(4) The submitted work was generated directly using AI tools without substantial independent effort.</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="selected_options" value="5" id="opt5">
+                        <label for="opt5">(5) The submitted work is copied or plagiarized from another source.</label>
+                    </div>
                 </div>
 
-                <!-- Section 3: Signature Pad -->
-                <div class="section-title">Signature Input</div>
+                <!-- Section 4: Signature Input -->
+                <div class="section-title">Signature</div>
 
                 <div class="sig-tabs">
                     <button type="button" class="tab-btn active" onclick="switchSigTab('draw', event)">Draw Signature</button>
-                    <button type="button" class="tab-btn" onclick="switchSigTab('upload', event)">Upload Image File</button>
+                    <button type="button" class="tab-btn" onclick="switchSigTab('upload', event)">Upload Image</button>
                 </div>
 
                 <div id="panel-draw" class="sig-panel active">
                     <div class="canvas-container">
-                        <canvas id="sig-canvas" width="600" height="140"></canvas>
+                        <canvas id="sig-canvas"></canvas>
                     </div>
-                    <div class="canvas-footer">
-                        <span style="font-size: 12px; color: var(--text-muted);">Use mouse or touch pad to sign</span>
+                    <div class="canvas-actions">
                         <button type="button" class="btn-clear" onclick="clearCanvas()">Clear Signature</button>
                     </div>
-                    <input type="hidden" id="signature_draw_data" name="signature_draw_data">
+                    <input type="hidden" name="signature_draw_data" id="signature_draw_data">
                 </div>
 
                 <div id="panel-upload" class="sig-panel">
-                    <input type="file" id="signature" name="signature" accept="image/*">
-                </div>
-
-                <!-- Section 4: Declarations -->
-                <div class="section-title">Ethical Undertaking Statements</div>
-
-                <div class="checkbox-card">
-                    {% for text in declaration_options %}
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="opt_{{ loop.index }}" name="selected_options"
-                            value="{{ loop.index }}" {% if loop.first %}checked{% endif %}>
-                        <label for="opt_{{ loop.index }}">({{ loop.index }}) {{ text }}</label>
+                    <div class="form-group">
+                        <input type="file" id="signature" name="signature" accept="image/*">
                     </div>
-                    {% endfor %}
                 </div>
 
-                <!-- Download Actions -->
+                <!-- Action Buttons -->
                 <div class="btn-group">
-                    <button type="submit" name="format" value="docx" class="btn btn-primary">
-                        Download Word (.docx)
+                    <button type="submit" onclick="document.getElementById('format').value='docx'" class="btn btn-primary">
+                        📝 Generate .DOCX
                     </button>
-                    <button type="submit" name="format" value="pdf" class="btn btn-secondary">
-                        Download PDF (.pdf)
+                    <button type="submit" onclick="document.getElementById('format').value='pdf'" class="btn btn-secondary">
+                        📄 Generate .PDF
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- CUSTOMISE MODAL DIALOG -->
+    <!-- Customise Modal -->
     <div id="customise-modal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <div class="modal-title">Customise Profile & Subjects</div>
-                <button type="button" class="modal-close" onclick="closeCustomiseModal()">✕</button>
+                <h3>Customise Profile & Subjects</h3>
+                <button type="button" class="modal-close" onclick="closeCustomiseModal()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label style="font-weight: 700; color: #4F46E5;">🌐 Backend API URL (Optional for Netlify)</label>
+                <input type="text" id="api_base_input" placeholder="https://your-backend-api.onrender.com">
+                <button type="button" onclick="saveBackendApiUrl()" class="btn btn-primary" style="margin-top: 6px; padding: 6px 12px; font-size: 12px;">Save API URL</button>
+            </div>
+            <hr style="margin: 14px 0; border: none; border-top: 1px solid #E2E8F0;">
+
+            <div class="form-group">
+                <label style="font-weight: 700;">➕ Add Custom Subject</label>
+                <input type="text" id="cust_sub_name" placeholder="Subject Name (e.g. Robotics)" style="margin-bottom: 8px;">
+                <input type="text" id="cust_sub_code" placeholder="Subject Code (e.g. ROB101)" style="margin-bottom: 8px;">
+                <input type="text" id="cust_sub_vert" placeholder="Vertical (e.g. HSSM_VEC / CUSTOM)" style="margin-bottom: 8px;">
+                <button type="button" onclick="addCustomSubject()" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 13px;">Add Subject</button>
             </div>
 
-            <!-- Section A: Add Custom Subject -->
-            <div style="margin-bottom: 24px;">
-                <div style="font-weight: 700; font-size: 14px; color: var(--primary); margin-bottom: 10px;">
-                    Add Custom Subject
-                </div>
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label style="font-size: 12px;">Subject Name</label>
-                    <input type="text" id="cust_sub_name" placeholder="e.g. Advanced Deep Learning">
-                </div>
-                <div class="form-row" style="margin-bottom: 10px;">
-                    <div class="form-group">
-                        <label style="font-size: 12px;">Subject Code</label>
-                        <input type="text" id="cust_sub_code" placeholder="e.g. PECE05T">
-                    </div>
-                    <div class="form-group">
-                        <label style="font-size: 12px;">Vertical</label>
-                        <input type="text" id="cust_sub_vert" placeholder="e.g. PC_PEC">
-                    </div>
-                </div>
-                <button type="button" onclick="addCustomSubject()" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 13px;">
-                    Add Subject to Dropdown List
-                </button>
-            </div>
+            <hr style="margin: 18px 0; border: none; border-top: 1px solid #E2E8F0;">
 
-            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-
-            <!-- Section B: Save Default Student Profile -->
-            <div>
-                <div style="font-weight: 700; font-size: 14px; color: var(--primary); margin-bottom: 10px;">
-                    Save Student Profile Defaults
-                </div>
-                <div class="form-row" style="margin-bottom: 10px;">
-                    <div class="form-group">
-                        <label style="font-size: 12px;">Roll No.</label>
-                        <input type="text" id="cust_roll_no" placeholder="24102A0062">
-                    </div>
-                    <div class="form-group">
-                        <label style="font-size: 12px;">Full Name</label>
-                        <input type="text" id="cust_student_name" placeholder="Anirudh Ghanshyam Sarve">
-                    </div>
-                </div>
-                <div class="form-row" style="margin-bottom: 12px;">
-                    <div class="form-group">
+            <div class="form-group">
+                <label style="font-weight: 700;">👤 Customise Profile Defaults</label>
+                <input type="text" id="cust_roll_no" placeholder="Roll No." style="margin-bottom: 8px;">
+                <input type="text" id="cust_student_name" placeholder="Full Name" style="margin-bottom: 8px;">
+                <div class="form-row" style="margin-bottom: 8px;">
+                    <div class="form-group" style="margin-bottom:0;">
                         <label style="font-size: 12px;">Branch</label>
                         <input type="text" id="cust_branch" placeholder="CMPN">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom:0;">
                         <label style="font-size: 12px;">Semester</label>
                         <input type="text" id="cust_semester" placeholder="V">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom:0;">
                         <label style="font-size: 12px;">Division</label>
                         <input type="text" id="cust_division" placeholder="A">
                     </div>
@@ -690,8 +588,27 @@
     </div>
 
     <script>
+        const DEFAULT_SUBJECTS = [
+            {"name": "E-Waste and Environmental Management", "code": "VEC02", "vertical": "HSSM_VEC"},
+            {"name": "Artificial Intelligence", "code": "PCCE10T", "vertical": "CMPN_CORE"},
+            {"name": "Machine Learning", "code": "PCCE11T", "vertical": "CMPN_CORE"},
+            {"name": "Cloud Computing", "code": "PCCE12T", "vertical": "CMPN_CORE"},
+            {"name": "Software Engineering", "code": "PCCE13T", "vertical": "CMPN_CORE"}
+        ];
+
+        function getApiBaseUrl() {
+            return (localStorage.getItem('API_BASE_URL') || '').replace(/\/+$/, '');
+        }
+
+        function saveBackendApiUrl() {
+            const url = document.getElementById('api_base_input').value.trim();
+            localStorage.setItem('API_BASE_URL', url);
+            alert("Backend API URL saved!");
+        }
+
         // --- MODAL LOGIC ---
         function openCustomiseModal() {
+            document.getElementById('api_base_input').value = localStorage.getItem('API_BASE_URL') || '';
             document.getElementById('cust_roll_no').value = document.getElementById('roll_no').value;
             document.getElementById('cust_student_name').value = document.getElementById('student_name').value;
             document.getElementById('cust_branch').value = document.getElementById('branch').value;
@@ -724,7 +641,6 @@
             select.selectedIndex = select.options.length - 1;
             updateSubjectDetails();
 
-            // Store custom subject locally
             let customSubjects = JSON.parse(localStorage.getItem('custom_subjects') || '[]');
             customSubjects.push({ name, code, vertical: vert });
             localStorage.setItem('custom_subjects', JSON.stringify(customSubjects));
@@ -738,22 +654,32 @@
         }
 
         function loadCustomSubjects() {
-            const customSubjects = JSON.parse(localStorage.getItem('custom_subjects') || '[]');
-            if (customSubjects.length === 0) return;
-
             const select = document.getElementById("subject_idx");
-            customSubjects.forEach(s => {
-                const option = document.createElement("option");
-                option.value = select.options.length;
-                option.text = s.name;
-                option.setAttribute("data-code", s.code);
-                option.setAttribute("data-vertical", s.vertical || 'CUSTOM');
-                select.appendChild(option);
+            select.innerHTML = '';
+            
+            DEFAULT_SUBJECTS.forEach((item, idx) => {
+                const opt = document.createElement("option");
+                opt.value = idx;
+                opt.text = item.name;
+                opt.setAttribute("data-code", item.code);
+                opt.setAttribute("data-vertical", item.vertical);
+                select.appendChild(opt);
+            });
+
+            let customSubjects = JSON.parse(localStorage.getItem('custom_subjects') || '[]');
+            customSubjects.forEach((item) => {
+                const opt = document.createElement("option");
+                opt.value = select.options.length;
+                opt.text = item.name;
+                opt.setAttribute("data-code", item.code);
+                opt.setAttribute("data-vertical", item.vertical);
+                select.appendChild(opt);
             });
         }
 
         function saveCustomProfileDefaults() {
-            document.getElementById('roll_no').value = document.getElementById('cust_roll_no').value.trim();
+            const rollNo = document.getElementById('cust_roll_no').value.trim();
+            if (rollNo) document.getElementById('roll_no').value = rollNo;
             document.getElementById('student_name').value = document.getElementById('cust_student_name').value.trim();
             document.getElementById('branch').value = document.getElementById('cust_branch').value.trim();
             document.getElementById('semester').value = document.getElementById('cust_semester').value.trim();
@@ -764,7 +690,6 @@
             alert("Student profile defaults saved successfully.");
         }
 
-        // --- LOCALSTORAGE & BACKEND API SYNC LOGIC ---
         async function fetchStudentProfile() {
             const rollNo = document.getElementById('roll_no').value.trim();
             const badge = document.getElementById('sync-badge');
@@ -780,7 +705,6 @@
 
             let loaded = false;
 
-            // 1. Check LocalStorage first (Instant local fetch)
             const localData = localStorage.getItem('student_profile_' + rollNo);
             if (localData) {
                 try {
@@ -790,16 +714,9 @@
                     badge.textContent = 'Loaded (LocalStorage)';
                     badge.className = 'sync-badge success';
                     loaded = true;
-                } catch (e) {
-                    console.error('LocalStorage parse error:', e);
-                }
+                } catch (e) {}
             }
 
-            function getApiBaseUrl() {
-                return (localStorage.getItem('API_BASE_URL') || '').replace(/\/+$/, '');
-            }
-
-            // 2. Fetch from secure server API endpoint (Supabase)
             try {
                 const resp = await fetch(getApiBaseUrl() + '/api/student/' + encodeURIComponent(rollNo));
                 if (resp.ok) {
@@ -895,14 +812,11 @@
                 updated_at: new Date().toISOString()
             };
 
-            // Save to LocalStorage
             localStorage.setItem('student_profile_' + rollNo, JSON.stringify(profileData));
             localStorage.setItem('last_active_roll_no', rollNo);
 
-            // Save via secure server API endpoint
             try {
-                const apiBase = (localStorage.getItem('API_BASE_URL') || '').replace(/\/+$/, '');
-                await fetch(apiBase + '/api/student', {
+                await fetch(getApiBaseUrl() + '/api/student', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(profileData)
@@ -918,7 +832,6 @@
             rollNoTimer = setTimeout(fetchStudentProfile, 600);
         }
 
-        // --- FORM LOGIC ---
         function updateSubjectDetails() {
             const select = document.getElementById("subject_idx");
             if (select.options.length === 0) return;
@@ -941,7 +854,6 @@
             }
         }
 
-        // Canvas drawing pad logic
         const canvas = document.getElementById('sig-canvas');
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
@@ -1051,12 +963,20 @@
             saveStudentProfile();
             if (activeTab === 'draw' && hasDrawn) {
                 document.getElementById('signature_draw_data').value = canvas.toDataURL('image/png');
-            } else {
+            } else if (activeTab !== 'draw') {
                 document.getElementById('signature_draw_data').value = '';
             }
+            const mainForm = document.getElementById('mainForm');
+            mainForm.action = getApiBaseUrl() + '/generate';
         }
 
-        // Init page: Restore last active roll number on same device if present
+        // Default today date
+        const d = new Date();
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        document.getElementById('date').value = `${dd}-${mm}-${yyyy}`;
+
         const savedLastRoll = localStorage.getItem('last_active_roll_no');
         if (savedLastRoll) {
             document.getElementById('roll_no').value = savedLastRoll;

@@ -9,6 +9,13 @@ from app import VERTICALS, ALL_SUBJECTS, DECLARATION_OPTIONS, generate_docx_byte
 
 app = Flask(__name__)
 
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, apikey"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    return response
+
 # Load credentials from .env or env/.env
 def load_env():
     for env_path in [".env", os.path.join("env", ".env")]:
@@ -81,6 +88,16 @@ def index():
         default_date=today
     )
 
+@app.route("/api/subjects", methods=["GET"])
+def get_subjects():
+    today = datetime.date.today().strftime("%d-%m-%Y")
+    return jsonify({
+        "success": True,
+        "subjects": ALL_SUBJECTS,
+        "declaration_options": DECLARATION_OPTIONS,
+        "default_date": today
+    })
+
 @app.route("/api/student/<roll_no>", methods=["GET"])
 def get_student_profile(roll_no):
     profile = fetch_profile_from_supabase(roll_no.strip())
@@ -97,39 +114,63 @@ def save_student_profile():
     return jsonify({"success": success})
 
 @app.route("/generate", methods=["POST"])
+@app.route("/api/generate", methods=["POST"])
 def generate():
-    s_idx = int(request.form.get("subject_idx", 0))
-    if s_idx < len(ALL_SUBJECTS):
-        subj_info = ALL_SUBJECTS[s_idx]
-        vertical_val = subj_info["vertical"]
-        subj_name_val = subj_info["name"]
-        subj_code_val = subj_info["code"]
+    if request.is_json:
+        req_data = request.get_json() or {}
+        s_idx = int(req_data.get("subject_idx", 0))
+        if s_idx < len(ALL_SUBJECTS):
+            subj_info = ALL_SUBJECTS[s_idx]
+            vertical_val = subj_info["vertical"]
+            subj_name_val = subj_info["name"]
+            subj_code_val = subj_info["code"]
+        else:
+            vertical_val = req_data.get("vertical", "CUSTOM")
+            subj_name_val = req_data.get("subject_name", "Custom Subject")
+            subj_code_val = req_data.get("subject_code", "CUSTOM")
+
+        assignment_no = str(req_data.get("assignment_no", "Experiment 1")).strip()
+        student_name = str(req_data.get("student_name", "")).strip()
+        roll_no = str(req_data.get("roll_no", "")).strip()
+        branch = str(req_data.get("branch", "")).strip()
+        semester = str(req_data.get("semester", "")).strip()
+        division = str(req_data.get("division", "")).strip()
+        date_str = str(req_data.get("date", "")).strip()
+        raw_options = req_data.get("selected_options", [1])
+        selected_options = [int(x) for x in raw_options if str(x).isdigit()] or [1]
+        fmt = str(req_data.get("format", "docx")).lower()
+        sig_draw_data = str(req_data.get("signature_draw_data", "")).strip()
     else:
-        vertical_val = request.form.get("vertical", "CUSTOM")
-        subj_name_val = request.form.get("subject_name", "Custom Subject")
-        subj_code_val = request.form.get("subject_code", "CUSTOM")
+        s_idx = int(request.form.get("subject_idx", 0))
+        if s_idx < len(ALL_SUBJECTS):
+            subj_info = ALL_SUBJECTS[s_idx]
+            vertical_val = subj_info["vertical"]
+            subj_name_val = subj_info["name"]
+            subj_code_val = subj_info["code"]
+        else:
+            vertical_val = request.form.get("vertical", "CUSTOM")
+            subj_name_val = request.form.get("subject_name", "Custom Subject")
+            subj_code_val = request.form.get("subject_code", "CUSTOM")
 
-    assignment_no = request.form.get("assignment_no", "Experiment 1").strip()
-    student_name = request.form.get("student_name", "").strip()
-    roll_no = request.form.get("roll_no", "").strip()
-    branch = request.form.get("branch", "").strip()
-    semester = request.form.get("semester", "").strip()
-    division = request.form.get("division", "").strip()
-    date_str = request.form.get("date", "").strip()
-
-    raw_options = request.form.getlist("selected_options")
-    selected_options = [int(x) for x in raw_options if x.isdigit()] or [1]
-
-    fmt = request.form.get("format", "docx").lower()
+        assignment_no = request.form.get("assignment_no", "Experiment 1").strip()
+        student_name = request.form.get("student_name", "").strip()
+        roll_no = request.form.get("roll_no", "").strip()
+        branch = request.form.get("branch", "").strip()
+        semester = request.form.get("semester", "").strip()
+        division = request.form.get("division", "").strip()
+        date_str = request.form.get("date", "").strip()
+        raw_options = request.form.getlist("selected_options")
+        selected_options = [int(x) for x in raw_options if str(x).isdigit()] or [1]
+        fmt = request.form.get("format", "docx").lower()
+        sig_draw_data = request.form.get("signature_draw_data", "").strip()
 
     # Check drawn signature data URL or uploaded signature file
     sig_bytes_io = None
-    sig_draw_data = request.form.get("signature_draw_data", "").strip()
 
     if sig_draw_data and sig_draw_data.startswith("data:image"):
         header, encoded = sig_draw_data.split(",", 1)
         sig_bytes_io = io.BytesIO(base64.b64decode(encoded))
-    else:
+    elif not request.is_json:
         sig_file = request.files.get("signature")
         if sig_file and sig_file.filename != "":
             sig_bytes_io = io.BytesIO(sig_file.read())
