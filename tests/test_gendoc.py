@@ -7,10 +7,12 @@ from PIL import Image
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app import (
+from gendoc import (
     process_signature_image,
     generate_docx_bytes,
     generate_pdf_bytes,
+)
+from app import (
     DECLARATION_OPTIONS,
     ALL_SUBJECTS
 )

@@ -719,6 +719,44 @@ def generate_pdf(data, out_path):
     doc.build(story)
 
 
+def generate_docx_bytes(data):
+    """Generates a DOCX file in memory using gendoc.py logic and returns a BytesIO buffer."""
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
+        tmp_path = tmp.name
+    try:
+        generate_docx(data, tmp_path)
+        with open(tmp_path, "rb") as f:
+            buf = io.BytesIO(f.read())
+        buf.seek(0)
+        return buf
+    finally:
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+
+
+def generate_pdf_bytes(data):
+    """Generates a PDF file in memory using gendoc.py logic and returns a BytesIO buffer."""
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        tmp_path = tmp.name
+    try:
+        generate_pdf(data, tmp_path)
+        with open(tmp_path, "rb") as f:
+            buf = io.BytesIO(f.read())
+        buf.seek(0)
+        return buf
+    finally:
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+
+
 # --------------------------------------------------------------------------
 # 4. FILE NAME HELPER
 # --------------------------------------------------------------------------

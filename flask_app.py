@@ -5,7 +5,8 @@ import json
 import datetime
 import urllib.request
 from flask import Flask, render_template, request, send_file, jsonify
-from app import VERTICALS, ALL_SUBJECTS, DECLARATION_OPTIONS, generate_docx_bytes, generate_pdf_bytes
+from gendoc import generate_docx_bytes, generate_pdf_bytes
+from app import VERTICALS, ALL_SUBJECTS, DECLARATION_OPTIONS
 
 app = Flask(__name__)
 
