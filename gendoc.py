@@ -339,32 +339,58 @@ def generate_docx(data, out_path):
 
     add_para()  # blank spacer line, as in the reference form
 
-    # --- Assignment No -----------------------------------------------
-    p = add_para()
-    add_run(p, "Assignment No: ")
-    add_run(p, data["assignment_no"], bold=True)
+    from docx.oxml import OxmlElement
 
-    # --- Branch / Vertical --------------------------------------------
-    p = add_para()
-    add_run(p, "Branch: ")
-    add_run(p, data["branch"], bold=True)
-    add_tab(p)
-    add_run(p, "Vertical: ")
-    add_run(p, data["vertical"], bold=True)
+    def remove_table_borders(table):
+        tblPr = table._element.xpath('w:tblPr')
+        if tblPr:
+            tblBorders = tblPr[0].xpath('w:tblBorders')
+            if tblBorders:
+                tblPr[0].remove(tblBorders[0])
+            borders = OxmlElement('w:tblBorders')
+            for b in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+                node = OxmlElement(f'w:{b}')
+                node.set(qn('w:val'), 'none')
+                borders.append(node)
+            tblPr[0].append(borders)
 
-    # --- Semester / Division  +  Subject Name / Code (one paragraph) --
-    p = add_para()
-    add_run(p, "Semester: ")
-    add_run(p, data["semester"], bold=True)
-    add_tab(p)
-    add_run(p, "Division: ")
-    add_run(p, data["division"], bold=True)
-    add_break(p)
-    add_run(p, "Subject Name: ")
-    add_run(p, data["subject_name"], bold=True)
-    add_tab(p)
-    add_run(p, "Subject Code: ")
-    add_run(p, data["subject_code"], bold=True)
+    def add_docx_2col_table(rows_tuples, col1_in=3.5, col2_in=2.77):
+        table = doc.add_table(rows=len(rows_tuples), cols=2)
+        remove_table_borders(table)
+        for i, row in enumerate(rows_tuples):
+            c0 = table.cell(i, 0)
+            c0.width = Inches(col1_in)
+            p0 = c0.paragraphs[0]
+            p0.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
+            p0.paragraph_format.line_spacing = LINE_SPACING
+            left_data = row[0]
+            if left_data:
+                lbl, val = left_data
+                add_run(p0, lbl, bold=False)
+                if val:
+                    add_run(p0, val, bold=True)
+
+            c1 = table.cell(i, 1)
+            c1.width = Inches(col2_in)
+            p1 = c1.paragraphs[0]
+            p1.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
+            p1.paragraph_format.line_spacing = LINE_SPACING
+            right_data = row[1] if len(row) > 1 else None
+            if right_data:
+                lbl, val = right_data
+                add_run(p1, lbl, bold=False)
+                if val:
+                    add_run(p1, val, bold=True)
+        return table
+
+    # --- Metadata Borderless Table ---
+    metadata_rows = [
+        (("Assignment No: ", data["assignment_no"]), None),
+        (("Branch: ", data["branch"]), ("Vertical: ", data["vertical"])),
+        (("Semester: ", data["semester"]), ("Division: ", data["division"])),
+        (("Subject Name: ", data["subject_name"]), ("Subject Code: ", data["subject_code"])),
+    ]
+    add_docx_2col_table(metadata_rows)
 
     # --- Declaration intro line -----------------------------------------
     p = add_para()
@@ -382,29 +408,49 @@ def generate_docx(data, out_path):
     p = add_para(justify=True)
     add_run(p, ETHICS_WARNING)
 
-    # --- Student Name / Roll No  +  Signature / Date (one paragraph) ----
-    p = add_para()
-    add_run(p, "Student Name: ")
-    add_run(p, data["student_name"], bold=True)
-    add_tab(p)
-    add_run(p, "Roll No.: ")
-    add_run(p, data["roll_no"], bold=True)
-    add_break(p)
-    add_run(p, "Signature: ")
+    # --- Student Info & Signature Borderless Table -----------------------
+    sig_table = doc.add_table(rows=2, cols=2)
+    remove_table_borders(sig_table)
+
+    # Row 0: Student Name / Roll No
+    c00 = sig_table.cell(0, 0)
+    c00.width = Inches(3.5)
+    p00 = c00.paragraphs[0]
+    p00.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
+    p00.paragraph_format.line_spacing = LINE_SPACING
+    add_run(p00, "Student Name: ", bold=False)
+    add_run(p00, data["student_name"], bold=True)
+
+    c01 = sig_table.cell(0, 1)
+    c01.width = Inches(2.77)
+    p01 = c01.paragraphs[0]
+    p01.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
+    p01.paragraph_format.line_spacing = LINE_SPACING
+    add_run(p01, "Roll No.: ", bold=False)
+    add_run(p01, data["roll_no"], bold=True)
+
+    # Row 1: Signature / Date
+    c10 = sig_table.cell(1, 0)
+    c10.width = Inches(3.5)
+    p10 = c10.paragraphs[0]
+    p10.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
+    p10.paragraph_format.line_spacing = LINE_SPACING
+    add_run(p10, "Signature: ", bold=False)
     signature_path = data.get("signature_path")
     if signature_path:
         processed_sig, tw, th = process_signature_image(signature_path)
         if processed_sig:
-            sig_run = p.add_run()
+            sig_run = p10.add_run()
             set_font(sig_run)
             sig_run.add_picture(processed_sig, width=Inches(tw), height=Inches(th))
-        else:
-            add_run(p, "\u2003" * 6)
-    else:
-        add_run(p, "\u2003" * 6)
-    add_tab(p)
-    add_run(p, "Date: ")
-    add_run(p, data["date"], bold=True)
+
+    c11 = sig_table.cell(1, 1)
+    c11.width = Inches(2.77)
+    p11 = c11.paragraphs[0]
+    p11.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
+    p11.paragraph_format.line_spacing = LINE_SPACING
+    add_run(p11, "Date: ", bold=False)
+    add_run(p11, data["date"], bold=True)
 
     doc.save(out_path)
 
@@ -600,22 +646,21 @@ def generate_pdf(data, out_path):
     story.append(Paragraph("Vidyalankar Institute of Technology, Mumbai", title_style))
     story.append(Spacer(1, PARA_SPACE_AFTER_PT))
 
-    story.append(Paragraph(f"Assignment No: <b>{data['assignment_no']}</b>", normal))
-
-    story.append(two_col_table(
-        f"Branch: <b>{data['branch']}</b>",
-        f"Vertical: <b>{data['vertical']}</b>",
-    ))
-    story.append(Spacer(1, PARA_SPACE_AFTER_PT))
-
-    story.append(two_col_table(
-        f"Semester: <b>{data['semester']}</b>",
-        f"Division: <b>{data['division']}</b>",
-        second_row=(
-            f"Subject Name: <b>{data['subject_name']}</b>",
-            f"Subject Code: <b>{data['subject_code']}</b>",
-        ),
-    ))
+    meta_table_rows = [
+        [Paragraph(f"Assignment No: <b>{data['assignment_no']}</b>", cell_style), Paragraph("", cell_style)],
+        [Paragraph(f"Branch: <b>{data['branch']}</b>", cell_style), Paragraph(f"Vertical: <b>{data['vertical']}</b>", cell_style)],
+        [Paragraph(f"Semester: <b>{data['semester']}</b>", cell_style), Paragraph(f"Division: <b>{data['division']}</b>", cell_style)],
+        [Paragraph(f"Subject Name: <b>{data['subject_name']}</b>", cell_style), Paragraph(f"Subject Code: <b>{data['subject_code']}</b>", cell_style)],
+    ]
+    t_meta = Table(meta_table_rows, colWidths=[col_width * inch, (content_width - col_width) * inch])
+    t_meta.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+    ]))
+    story.append(t_meta)
     story.append(Spacer(1, PARA_SPACE_AFTER_PT))
 
     story.append(Paragraph(DECLARATION_INTRO.replace("\u2610", "&#9744;"), normal))
