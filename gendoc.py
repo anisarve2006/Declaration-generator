@@ -356,12 +356,45 @@ def generate_docx(data, out_path):
                 borders.append(node)
             tblPr[0].append(borders)
 
+            # Zero out left cell padding and table left indent so cell content aligns with page margin
+            tblCellMar = tblPr[0].xpath('w:tblCellMar')
+            if tblCellMar:
+                tblPr[0].remove(tblCellMar[0])
+            mar = OxmlElement('w:tblCellMar')
+            for side in ['top', 'left', 'bottom', 'right']:
+                m = OxmlElement(f'w:{side}')
+                m.set(qn('w:w'), '0')
+                m.set(qn('w:type'), 'dxa')
+                mar.append(m)
+            tblPr[0].append(mar)
+
+            tblInd = tblPr[0].xpath('w:tblInd')
+            if tblInd:
+                tblPr[0].remove(tblInd[0])
+            ind = OxmlElement('w:tblInd')
+            ind.set(qn('w:w'), '0')
+            ind.set(qn('w:type'), 'dxa')
+            tblPr[0].append(ind)
+
+    def zero_cell_left_margin(cell):
+        tcPr = cell._element.get_or_add_tcPr()
+        tcMar = tcPr.xpath('w:tcMar')
+        if tcMar:
+            tcPr.remove(tcMar[0])
+        mar = OxmlElement('w:tcMar')
+        left_m = OxmlElement('w:left')
+        left_m.set(qn('w:w'), '0')
+        left_m.set(qn('w:type'), 'dxa')
+        mar.append(left_m)
+        tcPr.append(mar)
+
     def add_docx_2col_table(rows_tuples, col1_in=3.5, col2_in=2.77):
         table = doc.add_table(rows=len(rows_tuples), cols=2)
         remove_table_borders(table)
         for i, row in enumerate(rows_tuples):
             c0 = table.cell(i, 0)
             c0.width = Inches(col1_in)
+            zero_cell_left_margin(c0)
             p0 = c0.paragraphs[0]
             p0.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p0.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
@@ -419,6 +452,7 @@ def generate_docx(data, out_path):
     # Row 0: Student Name / Roll No
     c00 = sig_table.cell(0, 0)
     c00.width = Inches(3.5)
+    zero_cell_left_margin(c00)
     p00 = c00.paragraphs[0]
     p00.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p00.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
@@ -438,6 +472,7 @@ def generate_docx(data, out_path):
     # Row 1: Signature / Date
     c10 = sig_table.cell(1, 0)
     c10.width = Inches(3.5)
+    zero_cell_left_margin(c10)
     p10 = c10.paragraphs[0]
     p10.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p10.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
