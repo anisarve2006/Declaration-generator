@@ -361,6 +361,7 @@ def generate_docx(data, out_path):
             c0 = table.cell(i, 0)
             c0.width = Inches(col1_in)
             p0 = c0.paragraphs[0]
+            p0.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p0.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
             p0.paragraph_format.line_spacing = LINE_SPACING
             left_data = row[0]
@@ -373,6 +374,7 @@ def generate_docx(data, out_path):
             c1 = table.cell(i, 1)
             c1.width = Inches(col2_in)
             p1 = c1.paragraphs[0]
+            p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p1.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
             p1.paragraph_format.line_spacing = LINE_SPACING
             right_data = row[1] if len(row) > 1 else None
@@ -416,6 +418,7 @@ def generate_docx(data, out_path):
     c00 = sig_table.cell(0, 0)
     c00.width = Inches(3.5)
     p00 = c00.paragraphs[0]
+    p00.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p00.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
     p00.paragraph_format.line_spacing = LINE_SPACING
     add_run(p00, "Student Name: ", bold=False)
@@ -424,6 +427,7 @@ def generate_docx(data, out_path):
     c01 = sig_table.cell(0, 1)
     c01.width = Inches(2.77)
     p01 = c01.paragraphs[0]
+    p01.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p01.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
     p01.paragraph_format.line_spacing = LINE_SPACING
     add_run(p01, "Roll No.: ", bold=False)
@@ -433,6 +437,7 @@ def generate_docx(data, out_path):
     c10 = sig_table.cell(1, 0)
     c10.width = Inches(3.5)
     p10 = c10.paragraphs[0]
+    p10.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p10.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
     p10.paragraph_format.line_spacing = LINE_SPACING
     add_run(p10, "Signature: ", bold=False)
@@ -447,6 +452,7 @@ def generate_docx(data, out_path):
     c11 = sig_table.cell(1, 1)
     c11.width = Inches(2.77)
     p11 = c11.paragraphs[0]
+    p11.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p11.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
     p11.paragraph_format.line_spacing = LINE_SPACING
     add_run(p11, "Date: ", bold=False)
@@ -613,10 +619,10 @@ def generate_pdf(data, out_path):
     )
     normal = ParagraphStyle(
         "NormalL", fontName=base_font, fontSize=BODY_SIZE_PT,
-        leading=leading, spaceAfter=PARA_SPACE_AFTER_PT,
+        leading=leading, spaceAfter=PARA_SPACE_AFTER_PT, alignment=TA_LEFT
     )
     justify = ParagraphStyle("JustifyL", parent=normal, alignment=TA_JUSTIFY)
-    cell_style = ParagraphStyle("Cell", parent=normal, spaceAfter=0)
+    cell_style = ParagraphStyle("Cell", parent=normal, spaceAfter=0, alignment=TA_LEFT)
 
     def two_col_table(left_html, right_html, second_row=None):
         """A borderless 2-column row, or 2 rows, using real fixed-width
