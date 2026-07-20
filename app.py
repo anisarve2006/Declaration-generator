@@ -120,6 +120,20 @@ def process_signature_image(img_bytes):
         smooth_img.save(out, format="PNG")
         out.name = "signature.png"
         out.seek(0)
+
+        w, h = smooth_img.size
+        aspect = w / float(h) if h > 0 else 2.4
+
+        MAX_H = 0.32
+        MAX_W = 0.80
+
+        target_h = MAX_H
+        target_w = target_h * aspect
+
+        if target_w > MAX_W:
+            target_w = MAX_W
+            target_h = target_w / aspect
+
         return out, target_w, target_h
     except Exception:
         img_bytes.seek(0)
