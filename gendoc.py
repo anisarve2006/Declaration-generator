@@ -68,8 +68,12 @@ import sys
 import shutil
 import zipfile
 import datetime
-import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+try:
+    import tkinter as tk
+    from tkinter import ttk, filedialog, messagebox
+    HAS_TKINTER = True
+except ImportError:
+    HAS_TKINTER = False
 
 # --------------------------------------------------------------------------
 # 0. OUTPUT FOLDERS  (created automatically next to this script)
@@ -529,7 +533,7 @@ def generate_docx(data, out_path):
     p10.paragraph_format.space_after = Pt(PARA_SPACE_AFTER_PT)
     p10.paragraph_format.line_spacing = LINE_SPACING
     add_run(p10, "Signature: ", bold=False)
-    signature_path = data.get("signature_path")
+    signature_path = data.get("signature_path") or data.get("signature_bytes")
     if signature_path:
         processed_sig, tw, th = process_signature_image(signature_path)
         if processed_sig:
@@ -777,7 +781,7 @@ def generate_pdf(data, out_path):
     ))
     story.append(Spacer(1, 2))
 
-    signature_path = data.get("signature_path")
+    signature_path = data.get("signature_path") or data.get("signature_bytes")
     sig_label = "Signature:"
     date_label = f"Date: <b>{data['date']}</b>"
     if signature_path:
@@ -860,7 +864,12 @@ def build_filename(subject_code, assignment_no, ext):
 # --------------------------------------------------------------------------
 # 5. TKINTER GUI
 # --------------------------------------------------------------------------
-class DeclarationFormApp(tk.Tk):
+if HAS_TKINTER:
+    BaseAppClass = tk.Tk
+else:
+    BaseAppClass = object
+
+class DeclarationFormApp(BaseAppClass):
     def __init__(self):
         super().__init__()
         self.title("Declaration Form Generator")
@@ -1124,12 +1133,14 @@ def run_cli():
 
 
 if __name__ == "__main__":
-    if "--cli" in sys.argv:
+    if "--cli" in sys.argv or not HAS_TKINTER:
+        if not HAS_TKINTER and "--cli" not in sys.argv:
+            print("Tkinter not installed -- falling back to CLI mode.\n")
         run_cli()
     else:
         try:
             app = DeclarationFormApp()
             app.mainloop()
-        except tk.TclError:
+        except Exception:
             print("No display available for the GUI -- falling back to CLI mode.\n")
             run_cli()
