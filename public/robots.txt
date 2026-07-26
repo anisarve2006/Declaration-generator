@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://vit-declaration-generator.netlify.app/sitemap.xml
+Sitemap: https://generate-declaration.vercel.app/sitemap.xml
