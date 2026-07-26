@@ -691,6 +691,7 @@
                         <button type="button" class="btn-clear" onclick="clearCanvas()">Clear Signature</button>
                     </div>
                     <input type="hidden" name="signature_draw_data" id="signature_draw_data">
+                    <input type="hidden" name="custom_subjects" id="custom_subjects">
                 </div>
 
                 <div id="panel-upload" class="sig-panel">
@@ -940,6 +941,10 @@
             alert("Student profile defaults saved successfully.");
         }
 
+        function getApiBaseUrl() {
+            return (localStorage.getItem('API_BASE_URL') || '').replace(/\/+$/, '');
+        }
+
         async function fetchStudentProfile() {
             const rollNo = document.getElementById('roll_no').value.trim();
             const badge = document.getElementById('sync-badge');
@@ -955,6 +960,7 @@
 
             let loaded = false;
 
+            // 1. Check LocalStorage first
             const localData = localStorage.getItem('student_profile_' + rollNo);
             if (localData) {
                 try {
@@ -967,12 +973,32 @@
                 } catch (e) {}
             }
 
+            // 2. Fetch from Supabase via backend API
+            if (!loaded) {
+                try {
+                    const resp = await fetch(getApiBaseUrl() + '/api/student/' + encodeURIComponent(rollNo));
+                    if (resp.ok) {
+                        const resData = await resp.json();
+                        if (resData.success && resData.profile) {
+                            applyProfileToForm(resData.profile);
+                            localStorage.setItem('student_profile_' + rollNo, JSON.stringify(resData.profile));
+                            badge.style.display = 'inline-block';
+                            badge.textContent = 'Synced';
+                            badge.className = 'sync-badge success';
+                            loaded = true;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('API fetch note:', err);
+                }
+            }
+
             if (!loaded) {
                 badge.style.display = 'inline-block';
-                badge.textContent = 'No Local Profile';
+                badge.textContent = 'No Profile Found';
                 badge.className = 'sync-badge info';
                 setTimeout(() => {
-                    if (badge.textContent === 'No Local Profile') {
+                    if (badge.textContent === 'No Profile Found') {
                         badge.style.display = 'none';
                     }
                 }, 3000);
@@ -1055,6 +1081,17 @@
 
             localStorage.setItem('student_profile_' + rollNo, JSON.stringify(profileData));
             localStorage.setItem('last_active_roll_no', rollNo);
+
+            // Save to Supabase via backend API
+            try {
+                await fetch(getApiBaseUrl() + '/api/student', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(profileData)
+                });
+            } catch (err) {
+                console.error('API save error:', err);
+            }
         }
 
         let rollNoTimer = null;
@@ -1245,6 +1282,8 @@
             } else if (activeTab !== 'draw') {
                 document.getElementById('signature_draw_data').value = '';
             }
+            // Pass custom subjects to backend
+            document.getElementById('custom_subjects').value = localStorage.getItem('custom_subjects') || '[]';
             const mainForm = document.getElementById('mainForm');
             mainForm.action = getApiBaseUrl() + '/generate';
         }

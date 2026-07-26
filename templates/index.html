@@ -675,7 +675,7 @@
                 <p class="subtitle">Generate & download official declaration forms formatted for VIT submissions</p>
             </div>
 
-            <form action="/generate" method="POST" enctype="multipart/form-data" onsubmit="prepareFormSubmission()">
+            <form id="mainForm" action="/generate" method="POST" enctype="multipart/form-data" onsubmit="prepareFormSubmission()">
 
                 <!-- Section 1: Subject Details -->
                 <div class="section-title">Subject & Academic Vertical</div>
@@ -767,6 +767,7 @@
                         <button type="button" class="btn-clear" onclick="clearCanvas()">Clear Signature</button>
                     </div>
                     <input type="hidden" id="signature_draw_data" name="signature_draw_data">
+                    <input type="hidden" id="custom_subjects" name="custom_subjects">
                 </div>
 
                 <div id="panel-upload" class="sig-panel">
@@ -1025,6 +1026,10 @@
             alert("Student profile defaults saved successfully.");
         }
 
+        function getApiBaseUrl() {
+            return (localStorage.getItem('API_BASE_URL') || '').replace(/\/+$/, '');
+        }
+
         // --- LOCALSTORAGE & BACKEND API SYNC LOGIC ---
         async function fetchStudentProfile() {
             const rollNo = document.getElementById('roll_no').value.trim();
@@ -1041,7 +1046,7 @@
 
             let loaded = false;
 
-            // Check LocalStorage (Local fetch only)
+            // 1. Check LocalStorage first (instant local fetch)
             const localData = localStorage.getItem('student_profile_' + rollNo);
             if (localData) {
                 try {
@@ -1056,12 +1061,32 @@
                 }
             }
 
+            // 2. Fetch from Supabase via backend API
+            if (!loaded) {
+                try {
+                    const resp = await fetch(getApiBaseUrl() + '/api/student/' + encodeURIComponent(rollNo));
+                    if (resp.ok) {
+                        const resData = await resp.json();
+                        if (resData.success && resData.profile) {
+                            applyProfileToForm(resData.profile);
+                            localStorage.setItem('student_profile_' + rollNo, JSON.stringify(resData.profile));
+                            badge.style.display = 'inline-block';
+                            badge.textContent = 'Synced';
+                            badge.className = 'sync-badge success';
+                            loaded = true;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('API fetch note:', err);
+                }
+            }
+
             if (!loaded) {
                 badge.style.display = 'inline-block';
-                badge.textContent = 'No Local Profile';
+                badge.textContent = 'No Profile Found';
                 badge.className = 'sync-badge info';
                 setTimeout(() => {
-                    if (badge.textContent === 'No Local Profile') {
+                    if (badge.textContent === 'No Profile Found') {
                         badge.style.display = 'none';
                     }
                 }, 3000);
@@ -1145,6 +1170,17 @@
             // Save to LocalStorage
             localStorage.setItem('student_profile_' + rollNo, JSON.stringify(profileData));
             localStorage.setItem('last_active_roll_no', rollNo);
+
+            // Save to Supabase via backend API
+            try {
+                await fetch(getApiBaseUrl() + '/api/student', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(profileData)
+                });
+            } catch (err) {
+                console.error('API save error:', err);
+            }
         }
 
         let rollNoTimer = null;
@@ -1337,6 +1373,8 @@
             } else {
                 document.getElementById('signature_draw_data').value = '';
             }
+            // Pass custom subjects to backend
+            document.getElementById('custom_subjects').value = localStorage.getItem('custom_subjects') || '[]';
         }
 
         // Init page: Restore last active roll number on same device if present

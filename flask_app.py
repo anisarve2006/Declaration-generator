@@ -48,10 +48,54 @@ SUPABASE_URL = normalize_supabase_url(RAW_SUPABASE_URL)
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 
 def fetch_profile_from_supabase(roll_no):
-    return None
+    if not SUPABASE_URL or not SUPABASE_ANON_KEY or not roll_no:
+        return None
+    try:
+        endpoint = f"{SUPABASE_URL.rstrip('/')}/rest/v1/student_profiles?roll_no=eq.{roll_no}&select=*"
+        req = urllib.request.Request(endpoint, headers={
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": f"Bearer {SUPABASE_ANON_KEY}"
+        })
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            if data:
+                profile = data[0]
+                if isinstance(profile.get("custom_subjects"), str):
+                    try:
+                        profile["custom_subjects"] = json.loads(profile["custom_subjects"])
+                    except Exception:
+                        pass
+                return profile
+            return None
+    except Exception as e:
+        print(f"fetch_profile_from_supabase error: {e}")
+        return None
 
 def upsert_profile_to_supabase(profile_data):
-    return True
+    if not SUPABASE_URL or not SUPABASE_ANON_KEY or not profile_data.get("roll_no"):
+        return False
+    try:
+        payload_data = dict(profile_data)
+        if "custom_subjects" in payload_data:
+            if isinstance(payload_data["custom_subjects"], str):
+                try:
+                    payload_data["custom_subjects"] = json.loads(payload_data["custom_subjects"])
+                except Exception:
+                    pass
+        endpoint = f"{SUPABASE_URL.rstrip('/')}/rest/v1/student_profiles"
+        payload = json.dumps([payload_data]).encode("utf-8")
+        req = urllib.request.Request(endpoint, data=payload, headers={
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "resolution=merge-duplicates"
+        }, method="POST")
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            resp.read()
+            return True
+    except Exception as e:
+        print(f"upsert_profile_to_supabase error: {e}")
+        return False
 
 import traceback
 
@@ -125,6 +169,7 @@ def generate():
         selected_options = [int(x) for x in raw_options if str(x).isdigit()] or [1]
         fmt = str(req_data.get("format", "docx")).lower()
         sig_draw_data = str(req_data.get("signature_draw_data", "")).strip()
+        custom_subjects = req_data.get("custom_subjects", [])
     else:
         s_idx = int(request.form.get("subject_idx", 0))
         if s_idx < len(ALL_SUBJECTS):
@@ -148,6 +193,7 @@ def generate():
         selected_options = [int(x) for x in raw_options if str(x).isdigit()] or [1]
         fmt = request.form.get("format", "docx").lower()
         sig_draw_data = request.form.get("signature_draw_data", "").strip()
+        custom_subjects = request.form.get("custom_subjects", "[]")
 
     # Check drawn signature data URL or uploaded signature file
     sig_bytes_io = None
@@ -160,7 +206,20 @@ def generate():
         if sig_file and sig_file.filename != "":
             sig_bytes_io = io.BytesIO(sig_file.read())
 
-    # Local-only mode, do not upsert student profile to remote Supabase database
+    # Upsert student profile to remote Supabase database
+    if roll_no:
+        upsert_profile_to_supabase({
+            "roll_no": roll_no,
+            "student_name": student_name,
+            "branch": branch,
+            "semester": semester,
+            "division": division,
+            "last_subject_code": subj_code_val,
+            "last_subject_name": subj_name_val,
+            "custom_subjects": custom_subjects,
+            "signature_data": sig_draw_data if (sig_draw_data and sig_draw_data.startswith("data:image")) else "",
+            "updated_at": datetime.datetime.now().isoformat()
+        })
 
     form_data = {
         "vertical": vertical_val,
