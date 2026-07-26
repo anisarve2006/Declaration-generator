@@ -35,18 +35,17 @@
             background: var(--bg-gradient);
             color: var(--text-dark);
             min-height: 100vh;
-            padding: 88px 20px 40px;
+            padding: 40px 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
         }
 
         .dg-logo {
             position: absolute;
-            top: 24px;
-            left: 24px;
-            height: 48px;
+            top: 28px;
+            left: 28px;
+            height: 36px;
             width: auto;
             object-fit: contain;
             z-index: 10;
@@ -505,13 +504,13 @@
 
         @media (max-width: 640px) {
             body {
-                padding: 72px 0 0 !important;
+                padding: 0 !important;
             }
 
             .dg-logo {
                 top: 20px;
                 left: 18px;
-                height: 36px;
+                height: 32px;
             }
 
             .card {
@@ -557,9 +556,9 @@
 </head>
 
 <body>
-    <img src="/dg-logo.png" class="dg-logo" alt="Declaration Generator Logo">
     <div class="wrapper">
         <div class="card">
+            <img src="/dg-logo.png" class="dg-logo" alt="Declaration Generator Logo">
             <button type="button" class="btn-customise-trigger" onclick="openCustomiseModal()" title="Customise Profile & Add Subjects" aria-label="Customise Profile & Add Subjects">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
