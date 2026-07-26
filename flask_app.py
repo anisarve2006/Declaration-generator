@@ -8,7 +8,7 @@ from flask import Flask, render_template, request, send_file, jsonify
 from gendoc import generate_docx_bytes, generate_pdf_bytes
 from app import VERTICALS, ALL_SUBJECTS, DECLARATION_OPTIONS
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="public", static_url_path="")
 
 @app.after_request
 def add_cors_headers(response):

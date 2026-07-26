@@ -35,10 +35,21 @@
             background: var(--bg-gradient);
             color: var(--text-dark);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 88px 20px 40px;
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative;
+        }
+
+        .dg-logo {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            height: 48px;
+            width: auto;
+            object-fit: contain;
+            z-index: 10;
         }
 
         .wrapper {
@@ -405,7 +416,13 @@
 
         @media (max-width: 600px) {
             body {
-                padding: 0 !important;
+                padding: 72px 0 0 !important;
+            }
+
+            .dg-logo {
+                top: 20px;
+                left: 18px;
+                height: 36px;
             }
 
             .card {
@@ -444,6 +461,7 @@
 </head>
 
 <body>
+    <img src="/dg-logo.png" class="dg-logo" alt="Declaration Generator Logo">
     <div class="wrapper">
         <div class="card">
             <button type="button" class="btn-customise-trigger" onclick="openCustomiseModal()" title="Customise Profile & Add Subjects" aria-label="Customise Profile & Add Subjects">
