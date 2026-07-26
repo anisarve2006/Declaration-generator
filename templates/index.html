@@ -1218,6 +1218,8 @@
         let isDrawing = false;
         let hasDrawn = false;
         let loadedImg = null;
+        let allStrokes = [];
+        let currentStroke = [];
 
         function resizeCanvas() {
             const rect = canvas.getBoundingClientRect();
@@ -1247,9 +1249,6 @@
             
             return { x: clientX - rect.left, y: clientY - rect.top };
         }
-
-        let allStrokes = [];
-        let currentStroke = [];
 
         function startDrawing(e) {
             isDrawing = true;
