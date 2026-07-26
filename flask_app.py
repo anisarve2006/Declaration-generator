@@ -195,6 +195,15 @@ def serve_robots():
 def serve_sitemap():
     return send_file(os.path.join("public", "sitemap.xml"))
 
+@app.route("/dg-logo.png")
+def serve_logo():
+    return send_file(os.path.join("public", "dg-logo.png"), mimetype="image/png")
+
+@app.route("/OG-image-dg.png")
+def serve_og_image():
+    return send_file(os.path.join("public", "OG-image-dg.png"), mimetype="image/png")
+
 if __name__ == "__main__":
+
     app.run(debug=True, port=5000)
 
