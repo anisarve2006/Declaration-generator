@@ -501,7 +501,80 @@
             transform: scale(1.02);
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        /* Modal Tabs & Clear Data Styling */
+        .modal-tabs {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
 
+        .modal-tab-btn {
+            background: none;
+            border: none;
+            padding: 8px 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .modal-tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .modal-tab-btn.active {
+            color: var(--primary);
+        }
+
+        .modal-tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -9px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .modal-tab-content {
+            display: none;
+        }
+
+        .modal-tab-content.active {
+            display: block;
+        }
+
+        .clear-data-card {
+            background: #FEF2F2;
+            border: 1px solid #FCA5A5;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .clear-data-title {
+            color: #991B1B;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .clear-data-desc {
+            color: #7F1D1D;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
         @media (max-width: 640px) {
             body {
                 padding: 0 !important;
@@ -699,75 +772,98 @@
     <div id="customise-modal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <div class="modal-title">Customise Profile & Subjects</div>
+                <div class="modal-title">Settings & Defaults</div>
                 <button type="button" class="modal-close" onclick="closeCustomiseModal()">✕</button>
             </div>
 
-            <!-- Section A: Add Custom Subject -->
-            <div style="margin-bottom: 24px;">
-                <div style="font-weight: 700; font-size: 14px; color: var(--primary); margin-bottom: 10px;">
-                    Add Custom Subject
-                </div>
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label style="font-size: 12px;">Subject Name</label>
-                    <input type="text" id="cust_sub_name" placeholder="e.g. Advanced Deep Learning">
-                </div>
-                <div class="form-row" style="margin-bottom: 10px;">
-                    <div class="form-group">
-                        <label style="font-size: 12px;">Subject Code</label>
-                        <input type="text" id="cust_sub_code" placeholder="e.g. PECE05T">
-                    </div>
-                    <div class="form-group">
-                        <label style="font-size: 12px;">Vertical</label>
-                        <input type="text" id="cust_sub_vert" placeholder="e.g. PC_PEC">
-                    </div>
-                </div>
-                <button type="button" onclick="addCustomSubject()" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 13px;">
-                    Add Subject to Dropdown List
-                </button>
+            <div class="modal-tabs">
+                <button type="button" id="tab-btn-customise" class="modal-tab-btn active" onclick="switchModalTab('customise')">Customise Data</button>
+                <button type="button" id="tab-btn-clear" class="modal-tab-btn" onclick="switchModalTab('clear')">Clear Local Data</button>
             </div>
 
-            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+            <div id="tab-content-customise" class="modal-tab-content active">
+                <!-- Section A: Add Custom Subject -->
+                <div style="margin-bottom: 24px;">
+                    <div style="font-weight: 700; font-size: 14px; color: var(--primary); margin-bottom: 10px;">
+                        Add Custom Subject
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label style="font-size: 12px;">Subject Name</label>
+                        <input type="text" id="cust_sub_name" placeholder="e.g. Advanced Deep Learning">
+                    </div>
+                    <div class="form-row" style="margin-bottom: 10px;">
+                        <div class="form-group">
+                            <label style="font-size: 12px;">Subject Code</label>
+                            <input type="text" id="cust_sub_code" placeholder="e.g. PECE05T">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 12px;">Vertical</label>
+                            <input type="text" id="cust_sub_vert" placeholder="e.g. PC_PEC">
+                        </div>
+                    </div>
+                    <button type="button" onclick="addCustomSubject()" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 13px;">
+                        Add Subject to Dropdown List
+                    </button>
+                </div>
 
-            <!-- Section B: Save Default Student Profile -->
-            <div>
-                <div style="font-weight: 700; font-size: 14px; color: var(--primary); margin-bottom: 10px;">
-                    Save Student Profile Defaults
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+                <!-- Section B: Save Default Student Profile -->
+                <div>
+                    <div style="font-weight: 700; font-size: 14px; color: var(--primary); margin-bottom: 10px;">
+                        Save Student Profile Defaults
+                    </div>
+                    <div class="form-row" style="margin-bottom: 10px;">
+                        <div class="form-group">
+                            <label style="font-size: 12px;">Roll No.</label>
+                            <input type="text" id="cust_roll_no" placeholder="e.g. 24102A0001">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 12px;">Full Name</label>
+                            <input type="text" id="cust_student_name" placeholder="e.g. John Doe">
+                        </div>
+                    </div>
+                    <div class="form-row" style="margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label style="font-size: 12px;">Branch</label>
+                            <input type="text" id="cust_branch" placeholder="e.g. CMPN">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 12px;">Semester</label>
+                            <input type="text" id="cust_semester" placeholder="e.g. V">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 12px;">Division</label>
+                            <input type="text" id="cust_division" placeholder="e.g. A">
+                        </div>
+                    </div>
+                    <button type="button" onclick="saveCustomProfileDefaults()" class="btn btn-secondary" style="width: 100%; padding: 10px; font-size: 13px;">
+                        Save Profile Defaults
+                    </button>
                 </div>
-                <div class="form-row" style="margin-bottom: 10px;">
-                    <div class="form-group">
-                        <label style="font-size: 12px;">Roll No.</label>
-                        <input type="text" id="cust_roll_no" placeholder="e.g. 24102A0001">
-                    </div>
-                    <div class="form-group">
-                        <label style="font-size: 12px;">Full Name</label>
-                        <input type="text" id="cust_student_name" placeholder="e.g. John Doe">
-                    </div>
+            </div>
+
+            <div id="tab-content-clear" class="modal-tab-content">
+                <div class="clear-data-card">
+                    <div class="clear-data-title">⚠️ Danger Zone: Clear Device Data</div>
+                    <p class="clear-data-desc">
+                        This will permanently delete all default profile credentials (name, roll number, class parameters) and any custom added subjects saved locally in your browser storage.
+                    </p>
+                    <button type="button" onclick="clearAllLocalProfileData()" class="btn btn-secondary" style="width: 100%; padding: 12px; background: #DC2626 !important; color: white !important; font-weight: 700; border: none; border-radius: 8px; cursor: pointer;">
+                        🗑️ Delete All Device Data
+                    </button>
                 </div>
-                <div class="form-row" style="margin-bottom: 12px;">
-                    <div class="form-group">
-                        <label style="font-size: 12px;">Branch</label>
-                        <input type="text" id="cust_branch" placeholder="e.g. CMPN">
-                    </div>
-                    <div class="form-group">
-                        <label style="font-size: 12px;">Semester</label>
-                        <input type="text" id="cust_semester" placeholder="e.g. V">
-                    </div>
-                    <div class="form-group">
-                        <label style="font-size: 12px;">Division</label>
-                        <input type="text" id="cust_division" placeholder="e.g. A">
-                    </div>
-                </div>
-                <button type="button" onclick="saveCustomProfileDefaults()" class="btn btn-secondary" style="width: 100%; padding: 10px; font-size: 13px;">
-                    Save Profile Defaults
-                </button>
             </div>
         </div>
     </div>
 
     <script>
+        // Store original subject option list so we can restore defaults cleanly
+        const originalSubjectOptionsHTML = document.getElementById("subject_idx") ? document.getElementById("subject_idx").innerHTML : '';
+
         // --- MODAL LOGIC ---
         function openCustomiseModal() {
+            switchModalTab('customise');
             document.getElementById('cust_roll_no').value = document.getElementById('roll_no').value;
             document.getElementById('cust_student_name').value = document.getElementById('student_name').value;
             document.getElementById('cust_branch').value = document.getElementById('branch').value;
@@ -778,6 +874,61 @@
 
         function closeCustomiseModal() {
             document.getElementById('customise-modal').classList.remove('open');
+        }
+
+        function switchModalTab(tabName) {
+            document.querySelectorAll('.modal-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.modal-tab-content').forEach(content => content.classList.remove('active'));
+            
+            const activeBtn = document.getElementById('tab-btn-' + tabName);
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            const activeContent = document.getElementById('tab-content-' + tabName);
+            if (activeContent) activeContent.classList.add('active');
+        }
+
+        function clearAllLocalProfileData() {
+            if (confirm("Are you sure you want to delete all locally saved profile defaults and custom subjects? This action cannot be undone.")) {
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.startsWith('student_profile_') || key === 'last_active_roll_no' || key === 'custom_subjects')) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(k => localStorage.removeItem(k));
+
+                // Reset form fields
+                document.getElementById('roll_no').value = '';
+                document.getElementById('student_name').value = '';
+                document.getElementById('branch').value = '';
+                document.getElementById('semester').value = '';
+                document.getElementById('division').value = '';
+
+                // Reset modal fields
+                document.getElementById('cust_roll_no').value = '';
+                document.getElementById('cust_student_name').value = '';
+                document.getElementById('cust_branch').value = '';
+                document.getElementById('cust_semester').value = '';
+                document.getElementById('cust_division').value = '';
+
+                // Reset dropdown & update details
+                loadCustomSubjects();
+                updateSubjectDetails();
+
+                // Clear canvas drawing
+                clearCanvas();
+                document.getElementById('signature_draw_data').value = '';
+
+                // Reset badge
+                const badge = document.getElementById('sync-badge');
+                if (badge) {
+                    badge.style.display = 'none';
+                }
+
+                closeCustomiseModal();
+                alert("All locally saved profile data and custom subjects cleared successfully.");
+            }
         }
 
         function addCustomSubject() {
@@ -814,10 +965,13 @@
         }
 
         function loadCustomSubjects() {
-            const customSubjects = JSON.parse(localStorage.getItem('custom_subjects') || '[]');
-            if (customSubjects.length === 0) return;
-
             const select = document.getElementById("subject_idx");
+            if (!select) return;
+            if (originalSubjectOptionsHTML) {
+                select.innerHTML = originalSubjectOptionsHTML;
+            }
+
+            const customSubjects = JSON.parse(localStorage.getItem('custom_subjects') || '[]');
             customSubjects.forEach(s => {
                 const option = document.createElement("option");
                 option.value = select.options.length;

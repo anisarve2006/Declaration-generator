@@ -412,7 +412,80 @@
             transform: scale(1.02);
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        /* Modal Tabs & Clear Data Styling */
+        .modal-tabs {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
 
+        .modal-tab-btn {
+            background: none;
+            border: none;
+            padding: 8px 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .modal-tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .modal-tab-btn.active {
+            color: var(--primary);
+        }
+
+        .modal-tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -9px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .modal-tab-content {
+            display: none;
+        }
+
+        .modal-tab-content.active {
+            display: block;
+        }
+
+        .clear-data-card {
+            background: #FEF2F2;
+            border: 1px solid #FCA5A5;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .clear-data-title {
+            color: #991B1B;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .clear-data-desc {
+            color: #7F1D1D;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
         @media (max-width: 600px) {
             body {
                 padding: 0 !important;
@@ -612,48 +685,67 @@
     <div id="customise-modal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>Customise Profile & Subjects</h3>
+                <h3>Settings & Defaults</h3>
                 <button type="button" class="modal-close" onclick="closeCustomiseModal()">&times;</button>
             </div>
-            
-            <div class="form-group">
-                <label style="font-weight: 700; color: #4F46E5;">🌐 Backend API URL (Optional for Netlify)</label>
-                <input type="text" id="api_base_input" placeholder="https://your-backend-api.onrender.com">
-                <button type="button" onclick="saveBackendApiUrl()" class="btn btn-primary" style="margin-top: 6px; padding: 6px 12px; font-size: 12px;">Save API URL</button>
-            </div>
-            <hr style="margin: 14px 0; border: none; border-top: 1px solid #E2E8F0;">
 
-            <div class="form-group">
-                <label style="font-weight: 700;">➕ Add Custom Subject</label>
-                <input type="text" id="cust_sub_name" placeholder="Subject Name (e.g. Robotics)" style="margin-bottom: 8px;">
-                <input type="text" id="cust_sub_code" placeholder="Subject Code (e.g. ROB101)" style="margin-bottom: 8px;">
-                <input type="text" id="cust_sub_vert" placeholder="Vertical (e.g. HSSM_VEC / CUSTOM)" style="margin-bottom: 8px;">
-                <button type="button" onclick="addCustomSubject()" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 13px;">Add Subject</button>
+            <div class="modal-tabs">
+                <button type="button" id="tab-btn-customise" class="modal-tab-btn active" onclick="switchModalTab('customise')">Customise Data</button>
+                <button type="button" id="tab-btn-clear" class="modal-tab-btn" onclick="switchModalTab('clear')">Clear Local Data</button>
             </div>
 
-            <hr style="margin: 18px 0; border: none; border-top: 1px solid #E2E8F0;">
-
-            <div class="form-group">
-                <label style="font-weight: 700;">👤 Customise Profile Defaults</label>
-                <input type="text" id="cust_roll_no" placeholder="e.g. 24102A0001" style="margin-bottom: 8px;">
-                <input type="text" id="cust_student_name" placeholder="e.g. John Doe" style="margin-bottom: 8px;">
-                <div class="form-row" style="margin-bottom: 8px;">
-                    <div class="form-group" style="margin-bottom:0;">
-                        <label style="font-size: 12px;">Branch</label>
-                        <input type="text" id="cust_branch" placeholder="e.g. CMPN">
-                    </div>
-                    <div class="form-group" style="margin-bottom:0;">
-                        <label style="font-size: 12px;">Semester</label>
-                        <input type="text" id="cust_semester" placeholder="e.g. V">
-                    </div>
-                    <div class="form-group" style="margin-bottom:0;">
-                        <label style="font-size: 12px;">Division</label>
-                        <input type="text" id="cust_division" placeholder="e.g. A">
-                    </div>
+            <div id="tab-content-customise" class="modal-tab-content active">
+                <div class="form-group">
+                    <label style="font-weight: 700; color: #4F46E5;">🌐 Backend API URL (Optional for Netlify)</label>
+                    <input type="text" id="api_base_input" placeholder="https://your-backend-api.onrender.com">
+                    <button type="button" onclick="saveBackendApiUrl()" class="btn btn-primary" style="margin-top: 6px; padding: 6px 12px; font-size: 12px;">Save API URL</button>
                 </div>
-                <button type="button" onclick="saveCustomProfileDefaults()" class="btn btn-secondary" style="width: 100%; padding: 10px; font-size: 13px;">
-                    Save Profile Defaults
-                </button>
+                <hr style="margin: 14px 0; border: none; border-top: 1px solid #E2E8F0;">
+
+                <div class="form-group">
+                    <label style="font-weight: 700;">➕ Add Custom Subject</label>
+                    <input type="text" id="cust_sub_name" placeholder="Subject Name (e.g. Robotics)" style="margin-bottom: 8px;">
+                    <input type="text" id="cust_sub_code" placeholder="Subject Code (e.g. ROB101)" style="margin-bottom: 8px;">
+                    <input type="text" id="cust_sub_vert" placeholder="Vertical (e.g. HSSM_VEC / CUSTOM)" style="margin-bottom: 8px;">
+                    <button type="button" onclick="addCustomSubject()" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 13px;">Add Subject</button>
+                </div>
+
+                <hr style="margin: 18px 0; border: none; border-top: 1px solid #E2E8F0;">
+
+                <div class="form-group">
+                    <label style="font-weight: 700;">👤 Customise Profile Defaults</label>
+                    <input type="text" id="cust_roll_no" placeholder="e.g. 24102A0001" style="margin-bottom: 8px;">
+                    <input type="text" id="cust_student_name" placeholder="e.g. John Doe" style="margin-bottom: 8px;">
+                    <div class="form-row" style="margin-bottom: 8px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-size: 12px;">Branch</label>
+                            <input type="text" id="cust_branch" placeholder="e.g. CMPN">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-size: 12px;">Semester</label>
+                            <input type="text" id="cust_semester" placeholder="e.g. V">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-size: 12px;">Division</label>
+                            <input type="text" id="cust_division" placeholder="e.g. A">
+                        </div>
+                    </div>
+                    <button type="button" onclick="saveCustomProfileDefaults()" class="btn btn-secondary" style="width: 100%; padding: 10px; font-size: 13px;">
+                        Save Profile Defaults
+                    </button>
+                </div>
+            </div>
+
+            <div id="tab-content-clear" class="modal-tab-content">
+                <div class="clear-data-card">
+                    <div class="clear-data-title">⚠️ Danger Zone: Clear Device Data</div>
+                    <p class="clear-data-desc">
+                        This will permanently delete all default profile credentials (name, roll number, class parameters) and any custom added subjects saved locally in your browser storage.
+                    </p>
+                    <button type="button" onclick="clearAllLocalProfileData()" class="btn btn-secondary" style="width: 100%; padding: 12px; background: #DC2626 !important; color: white !important; font-weight: 700; border: none; border-radius: 8px; cursor: pointer;">
+                        🗑️ Delete All Device Data
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -679,6 +771,7 @@
 
         // --- MODAL LOGIC ---
         function openCustomiseModal() {
+            switchModalTab('customise');
             document.getElementById('api_base_input').value = localStorage.getItem('API_BASE_URL') || '';
             document.getElementById('cust_roll_no').value = document.getElementById('roll_no').value;
             document.getElementById('cust_student_name').value = document.getElementById('student_name').value;
@@ -690,6 +783,61 @@
 
         function closeCustomiseModal() {
             document.getElementById('customise-modal').classList.remove('open');
+        }
+
+        function switchModalTab(tabName) {
+            document.querySelectorAll('.modal-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.modal-tab-content').forEach(content => content.classList.remove('active'));
+            
+            const activeBtn = document.getElementById('tab-btn-' + tabName);
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            const activeContent = document.getElementById('tab-content-' + tabName);
+            if (activeContent) activeContent.classList.add('active');
+        }
+
+        function clearAllLocalProfileData() {
+            if (confirm("Are you sure you want to delete all locally saved profile defaults and custom subjects? This action cannot be undone.")) {
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.startsWith('student_profile_') || key === 'last_active_roll_no' || key === 'custom_subjects')) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(k => localStorage.removeItem(k));
+
+                // Reset form fields
+                document.getElementById('roll_no').value = '';
+                document.getElementById('student_name').value = '';
+                document.getElementById('branch').value = '';
+                document.getElementById('semester').value = '';
+                document.getElementById('division').value = '';
+
+                // Reset modal fields
+                document.getElementById('cust_roll_no').value = '';
+                document.getElementById('cust_student_name').value = '';
+                document.getElementById('cust_branch').value = '';
+                document.getElementById('cust_semester').value = '';
+                document.getElementById('cust_division').value = '';
+
+                // Reset dropdown & update details
+                loadCustomSubjects();
+                updateSubjectDetails();
+
+                // Clear canvas drawing
+                clearCanvas();
+                document.getElementById('signature_draw_data').value = '';
+
+                // Reset badge
+                const badge = document.getElementById('sync-badge');
+                if (badge) {
+                    badge.style.display = 'none';
+                }
+
+                closeCustomiseModal();
+                alert("All locally saved profile data and custom subjects cleared successfully.");
+            }
         }
 
         function addCustomSubject() {
