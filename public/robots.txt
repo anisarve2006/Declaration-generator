@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://vit-declaration-generator.netlify.app/sitemap.xml
