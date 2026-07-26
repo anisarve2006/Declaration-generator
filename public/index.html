@@ -1017,6 +1017,7 @@
                 const img = new Image();
                 img.onload = function () {
                     clearCanvas();
+                    loadedImg = img;
                     ctx.drawImage(img, 0, 0);
                     hasDrawn = true;
                     document.getElementById('signature_draw_data').value = profile.signature_data;
@@ -1088,6 +1089,7 @@
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
         let hasDrawn = false;
+        let loadedImg = null;
 
         function resizeCanvas() {
             const rect = canvas.getBoundingClientRect();
@@ -1097,14 +1099,24 @@
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.strokeStyle = '#0F172A';
+            redrawAllStrokes();
         }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                clientX = e.changedTouches[0].clientX;
+                clientY = e.changedTouches[0].clientY;
+            }
+            
             return { x: clientX - rect.left, y: clientY - rect.top };
         }
 
@@ -1164,6 +1176,9 @@
 
         function redrawAllStrokes() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (loadedImg) {
+                ctx.drawImage(loadedImg, 0, 0);
+            }
             ctx.fillStyle = '#0F172A';
             for (let i = 0; i < allStrokes.length; i++) {
                 drawStroke(allStrokes[i]);
@@ -1178,6 +1193,7 @@
             allStrokes = [];
             currentStroke = [];
             hasDrawn = false;
+            loadedImg = null;
         }
 
         canvas.addEventListener('mousedown', startDrawing);
@@ -1185,9 +1201,25 @@
         canvas.addEventListener('mouseup', stopDrawing);
         canvas.addEventListener('mouseleave', stopDrawing);
 
-        canvas.addEventListener('touchstart', startDrawing);
-        canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            startDrawing(e);
+        }, { passive: false });
+        
+        canvas.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+            draw(e);
+        }, { passive: false });
+        
+        canvas.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            stopDrawing();
+        }, { passive: false });
+        
+        canvas.addEventListener('touchcancel', function(e) {
+            e.preventDefault();
+            stopDrawing();
+        }, { passive: false });
 
         function triggerButtonTransition(btn, formatName) {
             const originalHTML = btn.innerHTML;
