@@ -15,9 +15,9 @@ def diagnose():
 
     endpoint = f"{SUPABASE_URL.rstrip('/')}/rest/v1/student_profiles"
     payload_data = [{
-        "roll_no": "24102A0062",
-        "student_name": "Anirudh Ghanshyam Sarve",
-        "branch": "CMPN",
+        "roll_no": "24000A0001",
+        "student_name": "John Doe",
+        "branch": "BRANCH",
         "semester": "V",
         "division": "A",
         "last_subject_code": "PCCE10T",

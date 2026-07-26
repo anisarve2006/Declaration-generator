@@ -955,9 +955,9 @@ class DeclarationFormApp(BaseAppClass):
         row += 1
 
         fields = [
-            ("Student Name", "student_name", "Anirudh Ghanshyam Sarve"),
-            ("Roll No.", "roll_no", "24102A0062"),
-            ("Branch", "branch", "CMPN"),
+            ("Student Name", "student_name", "John Doe"),
+            ("Roll No.", "roll_no", "24000A0001"),
+            ("Branch", "branch", "BRANCH"),
             ("Semester", "semester", "V"),
             ("Division", "division", "A"),
         ]
@@ -1103,9 +1103,9 @@ def run_cli():
         "subject_name": subject_name,
         "subject_code": subject_code,
         "assignment_no": input("Assignment / Experiment No: ") or "Experiment 1",
-        "student_name": input("Student Name [Anirudh Ghanshyam Sarve]: ") or "Anirudh Ghanshyam Sarve",
-        "roll_no": input("Roll No. [24102A0062]: ") or "24102A0062",
-        "branch": input("Branch [CMPN]: ") or "CMPN",
+        "student_name": input("Student Name [John Doe]: ") or "John Doe",
+        "roll_no": input("Roll No. [24000A0001]: ") or "24000A0001",
+        "branch": input("Branch [BRANCH]: ") or "BRANCH",
         "semester": input("Semester [V]: ") or "V",
         "division": input("Division [A]: ") or "A",
         "date": input(f"Date [{datetime.date.today().strftime('%d-%m-%Y')}]: ")

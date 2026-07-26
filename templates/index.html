@@ -234,9 +234,10 @@
             backdrop-filter: blur(8px);
             display: none;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             z-index: 1000;
             padding: 20px;
+            overflow-y: auto;
         }
 
         .modal-overlay.open {
@@ -250,6 +251,8 @@
             width: 100%;
             padding: 28px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            margin: 40px auto;
+            position: relative;
             animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -504,6 +507,16 @@
             .btn-group {
                 grid-template-columns: 1fr;
             }
+
+            .form-row {
+                grid-template-columns: 1fr !important;
+                gap: 12px;
+            }
+
+            .modal-card {
+                padding: 20px;
+                margin: 20px auto;
+            }
         }
     </style>
 </head>
@@ -567,29 +580,29 @@
                             Roll No. 
                             <span id="sync-badge" class="sync-badge" style="display:none;"></span>
                         </label>
-                        <input type="text" id="roll_no" name="roll_no" value="24102A0062" required 
+                        <input type="text" id="roll_no" name="roll_no" placeholder="e.g. 24102A0001" required 
                             onblur="fetchStudentProfile()" 
                             onkeydown="if(event.key === 'Enter'){ event.preventDefault(); fetchStudentProfile(); }" 
                             oninput="handleRollNoInput()">
                     </div>
                     <div class="form-group">
                         <label for="student_name">Full Name</label>
-                        <input type="text" id="student_name" name="student_name" value="Anirudh Ghanshyam Sarve" required>
+                        <input type="text" id="student_name" name="student_name" placeholder="e.g. John Doe" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="branch">Branch</label>
-                        <input type="text" id="branch" name="branch" value="CMPN" required>
+                        <input type="text" id="branch" name="branch" placeholder="e.g. CMPN" required>
                     </div>
                     <div class="form-group">
                         <label for="semester">Semester</label>
-                        <input type="text" id="semester" name="semester" value="V" required>
+                        <input type="text" id="semester" name="semester" placeholder="e.g. V" required>
                     </div>
                     <div class="form-group">
                         <label for="division">Division</label>
-                        <input type="text" id="division" name="division" value="A" required>
+                        <input type="text" id="division" name="division" placeholder="e.g. A" required>
                     </div>
                 </div>
 
@@ -689,25 +702,25 @@
                 <div class="form-row" style="margin-bottom: 10px;">
                     <div class="form-group">
                         <label style="font-size: 12px;">Roll No.</label>
-                        <input type="text" id="cust_roll_no" placeholder="24102A0062">
+                        <input type="text" id="cust_roll_no" placeholder="e.g. 24102A0001">
                     </div>
                     <div class="form-group">
                         <label style="font-size: 12px;">Full Name</label>
-                        <input type="text" id="cust_student_name" placeholder="Anirudh Ghanshyam Sarve">
+                        <input type="text" id="cust_student_name" placeholder="e.g. John Doe">
                     </div>
                 </div>
                 <div class="form-row" style="margin-bottom: 12px;">
                     <div class="form-group">
                         <label style="font-size: 12px;">Branch</label>
-                        <input type="text" id="cust_branch" placeholder="CMPN">
+                        <input type="text" id="cust_branch" placeholder="e.g. CMPN">
                     </div>
                     <div class="form-group">
                         <label style="font-size: 12px;">Semester</label>
-                        <input type="text" id="cust_semester" placeholder="V">
+                        <input type="text" id="cust_semester" placeholder="e.g. V">
                     </div>
                     <div class="form-group">
                         <label style="font-size: 12px;">Division</label>
-                        <input type="text" id="cust_division" placeholder="A">
+                        <input type="text" id="cust_division" placeholder="e.g. A">
                     </div>
                 </div>
                 <button type="button" onclick="saveCustomProfileDefaults()" class="btn btn-secondary" style="width: 100%; padding: 10px; font-size: 13px;">
@@ -808,14 +821,14 @@
 
             let loaded = false;
 
-            // 1. Check LocalStorage first (Instant local fetch)
+            // Check LocalStorage (Local fetch only)
             const localData = localStorage.getItem('student_profile_' + rollNo);
             if (localData) {
                 try {
                     const profile = JSON.parse(localData);
                     applyProfileToForm(profile);
                     badge.style.display = 'inline-block';
-                    badge.textContent = 'Loaded (LocalStorage)';
+                    badge.textContent = 'Loaded (Local)';
                     badge.className = 'sync-badge success';
                     loaded = true;
                 } catch (e) {
@@ -823,30 +836,15 @@
                 }
             }
 
-            function getApiBaseUrl() {
-                return (localStorage.getItem('API_BASE_URL') || '').replace(/\/+$/, '');
-            }
-
-            // 2. Fetch from secure server API endpoint (Supabase)
-            try {
-                const resp = await fetch(getApiBaseUrl() + '/api/student/' + encodeURIComponent(rollNo));
-                if (resp.ok) {
-                    const resData = await resp.json();
-                    if (resData.success && resData.profile) {
-                        applyProfileToForm(resData.profile);
-                        localStorage.setItem('student_profile_' + rollNo, JSON.stringify(resData.profile));
-                        badge.style.display = 'inline-block';
-                        badge.textContent = 'Synced';
-                        badge.className = 'sync-badge success';
-                        loaded = true;
-                    }
-                }
-            } catch (err) {
-                console.warn('API query note:', err);
-            }
-
             if (!loaded) {
-                badge.style.display = 'none';
+                badge.style.display = 'inline-block';
+                badge.textContent = 'No Local Profile';
+                badge.className = 'sync-badge info';
+                setTimeout(() => {
+                    if (badge.textContent === 'No Local Profile') {
+                        badge.style.display = 'none';
+                    }
+                }, 3000);
             }
         }
 
@@ -926,18 +924,6 @@
             // Save to LocalStorage
             localStorage.setItem('student_profile_' + rollNo, JSON.stringify(profileData));
             localStorage.setItem('last_active_roll_no', rollNo);
-
-            // Save via secure server API endpoint
-            try {
-                const apiBase = (localStorage.getItem('API_BASE_URL') || '').replace(/\/+$/, '');
-                await fetch(apiBase + '/api/student', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(profileData)
-                });
-            } catch (err) {
-                console.error('API save error:', err);
-            }
         }
 
         let rollNoTimer = null;
@@ -1105,10 +1091,18 @@
         const savedLastRoll = localStorage.getItem('last_active_roll_no');
         if (savedLastRoll) {
             document.getElementById('roll_no').value = savedLastRoll;
+            loadCustomSubjects();
+            updateSubjectDetails();
+            fetchStudentProfile();
+        } else {
+            document.getElementById('roll_no').value = '';
+            document.getElementById('student_name').value = '';
+            document.getElementById('branch').value = '';
+            document.getElementById('semester').value = '';
+            document.getElementById('division').value = '';
+            loadCustomSubjects();
+            updateSubjectDetails();
         }
-        loadCustomSubjects();
-        updateSubjectDetails();
-        fetchStudentProfile();
     </script>
 </body>
 

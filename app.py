@@ -52,35 +52,10 @@ for vert, subs in VERTICALS.items():
 # 2. SUPABASE REST HELPERS (Zero Extra Dependencies)
 # --------------------------------------------------------------------------
 def fetch_supabase_profile(url, key, roll_no):
-    if not url or not key or not roll_no:
-        return None
-    try:
-        endpoint = f"{url.rstrip('/')}/rest/v1/student_profiles?roll_no=eq.{roll_no}&select=*"
-        req = urllib.request.Request(endpoint, headers={
-            "apikey": key,
-            "Authorization": f"Bearer {key}"
-        })
-        with urllib.request.urlopen(req, timeout=4) as resp:
-            data = json.loads(resp.read().decode())
-            return data[0] if data else None
-    except Exception:
-        return None
+    return None
 
 def upsert_supabase_profile(url, key, profile):
-    if not url or not key or not profile.get("roll_no"):
-        return
-    try:
-        endpoint = f"{url.rstrip('/')}/rest/v1/student_profiles"
-        payload = json.dumps([profile]).encode()
-        req = urllib.request.Request(endpoint, data=payload, headers={
-            "apikey": key,
-            "Authorization": f"Bearer {key}",
-            "Content-Type": "application/json",
-            "Prefer": "resolution=merge-duplicates"
-        }, method="POST")
-        urllib.request.urlopen(req, timeout=4)
-    except Exception:
-        pass
+    return
 
 # --------------------------------------------------------------------------
 # 3. DOCUMENT GENERATION ENGINE (Imported from gendoc.py)
@@ -196,10 +171,10 @@ with header_col2:
         
         # Section 2: Customise Profile Defaults
         st.caption("👤 **Customise Profile Defaults**")
-        p_name = st.text_input("Full Name", value=st.session_state.get("student_name", "Anirudh Ghanshyam Sarve"), key="pop_p_name")
-        p_branch = st.text_input("Branch", value=st.session_state.get("branch", "CMPN"), key="pop_p_branch")
-        p_sem = st.text_input("Semester", value=st.session_state.get("semester", "V"), key="pop_p_sem")
-        p_div = st.text_input("Division", value=st.session_state.get("division", "A"), key="pop_p_div")
+        p_name = st.text_input("Full Name", value=st.session_state.get("student_name", ""), key="pop_p_name", placeholder="e.g. John Doe")
+        p_branch = st.text_input("Branch", value=st.session_state.get("branch", ""), key="pop_p_branch", placeholder="e.g. CMPN")
+        p_sem = st.text_input("Semester", value=st.session_state.get("semester", ""), key="pop_p_sem", placeholder="e.g. V")
+        p_div = st.text_input("Division", value=st.session_state.get("division", ""), key="pop_p_div", placeholder="e.g. A")
         
         if st.button("💾 Save Profile Defaults", key="btn_save_prof"):
             st.session_state["student_name"] = p_name
@@ -210,7 +185,7 @@ with header_col2:
             # Sync to Supabase if configured
             sp_url = st.session_state.get("sb_url")
             sp_key = st.session_state.get("sb_key")
-            curr_roll = st.session_state.get("roll_no", "24102A0062")
+            curr_roll = st.session_state.get("roll_no", "")
             if sp_url and sp_key and curr_roll:
                 upsert_supabase_profile(sp_url, sp_key, {
                     "roll_no": curr_roll,
@@ -261,7 +236,7 @@ with st.container():
     st.subheader("👤 Student Details")
     
     # Roll number auto-fetch trigger
-    roll_input = st.text_input("Roll No. (Enter to fetch profile)", value=st.session_state.get("roll_no", "24102A0062"), key="roll_input_field")
+    roll_input = st.text_input("Roll No. (Enter to fetch profile)", value=st.session_state.get("roll_no", ""), key="roll_input_field", placeholder="e.g. 24102A0001")
     
     if roll_input != st.session_state.get("last_roll"):
         st.session_state["last_roll"] = roll_input
@@ -286,12 +261,12 @@ with st.container():
 
     col1, col2 = st.columns(2)
     with col1:
-        student_name = st.text_input("Student Name", value=st.session_state.get("student_name", "Anirudh Ghanshyam Sarve"))
-        branch = st.text_input("Branch", value=st.session_state.get("branch", "CMPN"))
-        division = st.text_input("Division", value=st.session_state.get("division", "A"))
+        student_name = st.text_input("Student Name", value=st.session_state.get("student_name", ""), placeholder="e.g. John Doe")
+        branch = st.text_input("Branch", value=st.session_state.get("branch", ""))
+        division = st.text_input("Division", value=st.session_state.get("division", ""))
     with col2:
         roll_no = roll_input
-        semester = st.text_input("Semester", value=st.session_state.get("semester", "V"))
+        semester = st.text_input("Semester", value=st.session_state.get("semester", ""))
         date_str = st.text_input("Date (DD-MM-YYYY)", value=datetime.date.today().strftime("%d-%m-%Y"))
 
 st.markdown("---")

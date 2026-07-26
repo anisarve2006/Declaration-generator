@@ -48,36 +48,10 @@ SUPABASE_URL = normalize_supabase_url(RAW_SUPABASE_URL)
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 
 def fetch_profile_from_supabase(roll_no):
-    if not SUPABASE_URL or not SUPABASE_ANON_KEY or not roll_no:
-        return None
-    try:
-        endpoint = f"{SUPABASE_URL.rstrip('/')}/rest/v1/student_profiles?roll_no=eq.{roll_no}&select=*"
-        req = urllib.request.Request(endpoint, headers={
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": f"Bearer {SUPABASE_ANON_KEY}"
-        })
-        with urllib.request.urlopen(req, timeout=4) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data[0] if data else None
-    except Exception:
-        return None
+    return None
 
 def upsert_profile_to_supabase(profile_data):
-    if not SUPABASE_URL or not SUPABASE_ANON_KEY or not profile_data.get("roll_no"):
-        return False
-    try:
-        endpoint = f"{SUPABASE_URL.rstrip('/')}/rest/v1/student_profiles"
-        payload = json.dumps([profile_data]).encode("utf-8")
-        req = urllib.request.Request(endpoint, data=payload, headers={
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
-            "Content-Type": "application/json",
-            "Prefer": "resolution=merge-duplicates"
-        }, method="POST")
-        with urllib.request.urlopen(req, timeout=4) as resp:
-            return True
-    except Exception:
-        return False
+    return True
 
 @app.route("/", methods=["GET"])
 def index():
@@ -176,19 +150,7 @@ def generate():
         if sig_file and sig_file.filename != "":
             sig_bytes_io = io.BytesIO(sig_file.read())
 
-    # Upsert to Supabase securely on backend
-    if roll_no:
-        upsert_profile_to_supabase({
-            "roll_no": roll_no,
-            "student_name": student_name,
-            "branch": branch,
-            "semester": semester,
-            "division": division,
-            "last_subject_code": subj_code_val,
-            "last_subject_name": subj_name_val,
-            "signature_data": sig_draw_data if (sig_draw_data and sig_draw_data.startswith("data:image")) else "",
-            "updated_at": datetime.datetime.now().isoformat()
-        })
+    # Local-only mode, do not upsert student profile to remote Supabase database
 
     form_data = {
         "vertical": vertical_val,
