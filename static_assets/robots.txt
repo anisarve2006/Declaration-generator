@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://generate-declaration.vercel.app/sitemap.xml

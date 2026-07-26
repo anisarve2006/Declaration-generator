@@ -197,21 +197,29 @@ def generate():
             mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
 
+def get_asset_path(filename):
+    # Try static_assets first (packaged in Vercel lambda environment)
+    path = os.path.join("static_assets", filename)
+    if os.path.exists(path):
+        return path
+    # Fallback to public (used locally)
+    return os.path.join("public", filename)
+
 @app.route("/robots.txt")
 def serve_robots():
-    return send_file(os.path.join("public", "robots.txt"))
+    return send_file(get_asset_path("robots.txt"))
 
 @app.route("/sitemap.xml")
 def serve_sitemap():
-    return send_file(os.path.join("public", "sitemap.xml"))
+    return send_file(get_asset_path("sitemap.xml"))
 
 @app.route("/dg-logo.png")
 def serve_logo():
-    return send_file(os.path.join("public", "dg-logo.png"), mimetype="image/png")
+    return send_file(get_asset_path("dg-logo.png"), mimetype="image/png")
 
 @app.route("/OG-image-dg.png")
 def serve_og_image():
-    return send_file(os.path.join("public", "OG-image-dg.png"), mimetype="image/png")
+    return send_file(get_asset_path("OG-image-dg.png"), mimetype="image/png")
 
 if __name__ == "__main__":
 
