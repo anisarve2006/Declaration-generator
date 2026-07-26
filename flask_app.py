@@ -53,6 +53,16 @@ def fetch_profile_from_supabase(roll_no):
 def upsert_profile_to_supabase(profile_data):
     return True
 
+import traceback
+
+@app.errorhandler(500)
+def handle_500(e):
+    return f"<pre>{traceback.format_exc()}</pre>", 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    return f"<pre>{traceback.format_exc()}</pre>", 500
+
 @app.route("/", methods=["GET"])
 def index():
     today = datetime.date.today().strftime("%d-%m-%Y")
