@@ -207,11 +207,11 @@ def get_asset_path(filename):
 
 @app.route("/robots.txt")
 def serve_robots():
-    return send_file(get_asset_path("robots.txt"))
+    return send_file(get_asset_path("robots.txt"), mimetype="text/plain")
 
 @app.route("/sitemap.xml")
 def serve_sitemap():
-    return send_file(get_asset_path("sitemap.xml"))
+    return send_file(get_asset_path("sitemap.xml"), mimetype="application/xml")
 
 @app.route("/dg-logo.png")
 def serve_logo():
