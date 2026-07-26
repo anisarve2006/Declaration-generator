@@ -93,6 +93,7 @@
 
         .header {
             text-align: center;
+            margin-top: 36px;
             margin-bottom: 30px;
         }
 
@@ -105,7 +106,8 @@
             padding: 6px 14px;
             border-radius: 50px;
             letter-spacing: 0.5px;
-            margin-bottom: 12px;
+            margin-top: 16px;
+            margin-bottom: 0;
         }
 
         .header h1 {
@@ -530,6 +532,10 @@
                 padding: 24px 18px;
             }
 
+            .header {
+                margin-top: 44px;
+            }
+
             .form-row {
                 grid-template-columns: 1fr !important;
                 gap: 12px;
@@ -569,9 +575,9 @@
                 </svg>
             </button>
             <div class="header">
-                <div class="badge">Vidyalankar Institute of Technology</div>
                 <h1>Ethical Practice Undertaking</h1>
                 <p class="subtitle">Generate & download official declaration forms formatted for VIT submissions</p>
+                <div class="badge">Vidyalankar Institute of Technology</div>
             </div>
 
             <form id="mainForm" action="/generate" method="POST" enctype="multipart/form-data" onsubmit="prepareFormSubmission()">
