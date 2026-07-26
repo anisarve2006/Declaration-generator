@@ -221,6 +221,34 @@ def serve_logo():
 def serve_og_image():
     return send_file(get_asset_path("OG-image-dg.png"), mimetype="image/png")
 
+@app.route("/favicon.ico")
+def serve_favicon():
+    return send_file(get_asset_path("favicon.ico"), mimetype="image/x-icon")
+
+@app.route("/favicon.svg")
+def serve_favicon_svg():
+    return send_file(get_asset_path("favicon.svg"), mimetype="image/svg+xml")
+
+@app.route("/favicon-96x96.png")
+def serve_favicon_96():
+    return send_file(get_asset_path("favicon-96x96.png"), mimetype="image/png")
+
+@app.route("/apple-touch-icon.png")
+def serve_apple_icon():
+    return send_file(get_asset_path("apple-touch-icon.png"), mimetype="image/png")
+
+@app.route("/site.webmanifest")
+def serve_manifest():
+    return send_file(get_asset_path("site.webmanifest"), mimetype="application/manifest+json")
+
+@app.route("/web-app-manifest-192x192.png")
+def serve_manifest_192():
+    return send_file(get_asset_path("web-app-manifest-192x192.png"), mimetype="image/png")
+
+@app.route("/web-app-manifest-512x512.png")
+def serve_manifest_512():
+    return send_file(get_asset_path("web-app-manifest-512x512.png"), mimetype="image/png")
+
 if __name__ == "__main__":
 
     app.run(debug=True, port=5000)
