@@ -187,5 +187,14 @@ def generate():
             mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
 
+@app.route("/robots.txt")
+def serve_robots():
+    return send_file(os.path.join("public", "robots.txt"))
+
+@app.route("/sitemap.xml")
+def serve_sitemap():
+    return send_file(os.path.join("public", "sitemap.xml"))
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+
