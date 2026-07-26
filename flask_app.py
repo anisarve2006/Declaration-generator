@@ -264,6 +264,10 @@ def get_asset_path(filename):
     # Fallback to public (used locally)
     return os.path.join("public", filename)
 
+@app.route("/ads.txt")
+def serve_ads():
+    return send_file(get_asset_path("ads.txt"), mimetype="text/plain")
+
 @app.route("/robots.txt")
 def serve_robots():
     return send_file(get_asset_path("robots.txt"), mimetype="text/plain")
