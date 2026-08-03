@@ -1222,6 +1222,10 @@
             }
         }
     </style>
+    <!-- Load OpenCV.js (Required for Computer Vision processing) -->
+    <script src="https://docs.opencv.org/4.7.0/opencv.js" async></script>
+    <!-- Load jscanify for paper detection wrapper -->
+    <script src="https://cdn.jsdelivr.net/gh/ColonelParrot/jscanify@master/src/jscanify.min.js"></script>
 </head>
 
 <body>
@@ -2362,7 +2366,47 @@
             }
         }
 
+        let jscanner = null;
+        function getScanner() {
+            if (!jscanner && typeof cv !== 'undefined' && cv.Mat) {
+                try {
+                    jscanner = new jscanify();
+                } catch (e) {
+                    console.error("jscanify init error", e);
+                }
+            }
+            return jscanner;
+        }
+
         function autoCropSelectedImage() {
+            const scannerInstance = getScanner();
+            
+            if (scannerInstance && typeof cv !== 'undefined') {
+                try {
+                    const src = cv.imread(cropperImage);
+                    const contour = scannerInstance.findPaperContour(src);
+                    const cornerPoints = scannerInstance.getCornerPoints(contour);
+                    src.delete();
+                    
+                    if (cornerPoints && cornerPoints.topLeftCorner) {
+                        const scaleX = cropperCanvas.width / cropperImage.width;
+                        const scaleY = cropperCanvas.height / cropperImage.height;
+                        
+                        cropHandles = [
+                            { x: cornerPoints.topLeftCorner.x * scaleX, y: cornerPoints.topLeftCorner.y * scaleY },
+                            { x: cornerPoints.topRightCorner.x * scaleX, y: cornerPoints.topRightCorner.y * scaleY },
+                            { x: cornerPoints.bottomRightCorner.x * scaleX, y: cornerPoints.bottomRightCorner.y * scaleY },
+                            { x: cornerPoints.bottomLeftCorner.x * scaleX, y: cornerPoints.bottomLeftCorner.y * scaleY }
+                        ];
+                        
+                        drawCropper();
+                        return;
+                    }
+                } catch (err) {
+                    console.warn("Computer Vision auto-detect failed, falling back to basic scanlines:", err);
+                }
+            }
+            
             const width = 300;
             const height = Math.round(width * (cropperImage.height / cropperImage.width));
             
@@ -2376,14 +2420,13 @@
             const data = imgData.data;
             
             const gray = new Uint8Array(width * height);
-            let minB = 255, maxB = 0, sumB = 0;
+            let minB = 255, maxB = 0;
             
             for (let i = 0; i < data.length; i += 4) {
                 const b = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
                 gray[i/4] = b;
                 if (b < minB) minB = b;
                 if (b > maxB) maxB = b;
-                sumB += b;
             }
             
             const threshold = minB + (maxB - minB) * 0.35;
@@ -2506,34 +2549,78 @@
         function applyAndConfirmCrop() {
             const page = capturedPages[currentEditingIndex];
             
-            const x = Math.min(cropHandles[0].x, cropHandles[3].x) / canvasScale;
-            const y = Math.min(cropHandles[0].y, cropHandles[1].y) / canvasScale;
-            const w = Math.max(cropHandles[1].x, cropHandles[2].x) / canvasScale - x;
-            const h = Math.max(cropHandles[3].y, cropHandles[2].y) / canvasScale - y;
-            
-            page.cropBox = {
-                x: Math.max(0, Math.round(x)),
-                y: Math.max(0, Math.round(y)),
-                w: Math.min(cropperImage.width - Math.round(x), Math.round(w)),
-                h: Math.min(cropperImage.height - Math.round(y), Math.round(h))
-            };
-            
             const cropCanvas = document.createElement('canvas');
-            cropCanvas.width = page.cropBox.w;
-            cropCanvas.height = page.cropBox.h;
             const ctx = cropCanvas.getContext('2d');
             
-            ctx.drawImage(
-                cropperImage,
-                page.cropBox.x,
-                page.cropBox.y,
-                page.cropBox.w,
-                page.cropBox.h,
-                0,
-                0,
-                page.cropBox.w,
-                page.cropBox.h
-            );
+            const scannerInstance = getScanner();
+            
+            function fallbackRectCrop() {
+                const x = Math.min(cropHandles[0].x, cropHandles[3].x) / canvasScale;
+                const y = Math.min(cropHandles[0].y, cropHandles[1].y) / canvasScale;
+                const w = Math.max(cropHandles[1].x, cropHandles[2].x) / canvasScale - x;
+                const h = Math.max(cropHandles[3].y, cropHandles[2].y) / canvasScale - y;
+                
+                page.cropBox = {
+                    x: Math.max(0, Math.round(x)),
+                    y: Math.max(0, Math.round(y)),
+                    w: Math.min(cropperImage.width - Math.round(x), Math.round(w)),
+                    h: Math.min(cropperImage.height - Math.round(y), Math.round(h))
+                };
+                
+                cropCanvas.width = page.cropBox.w;
+                cropCanvas.height = page.cropBox.h;
+                ctx.drawImage(
+                    cropperImage,
+                    page.cropBox.x,
+                    page.cropBox.y,
+                    page.cropBox.w,
+                    page.cropBox.h,
+                    0,
+                    0,
+                    page.cropBox.w,
+                    page.cropBox.h
+                );
+            }
+            
+            if (scannerInstance && typeof cv !== 'undefined') {
+                try {
+                    // Rescale cropHandles back to original image size coordinates
+                    const corners = {
+                        topLeftCorner: { x: cropHandles[0].x / canvasScale, y: cropHandles[0].y / canvasScale },
+                        topRightCorner: { x: cropHandles[1].x / canvasScale, y: cropHandles[1].y / canvasScale },
+                        bottomRightCorner: { x: cropHandles[2].x / canvasScale, y: cropHandles[2].y / canvasScale },
+                        bottomLeftCorner: { x: cropHandles[3].x / canvasScale, y: cropHandles[3].y / canvasScale }
+                    };
+                    
+                    // Calculate optimal size to preserve detail and aspect ratio of A4 sheet
+                    const w1 = Math.hypot(corners.topRightCorner.x - corners.topLeftCorner.x, corners.topRightCorner.y - corners.topLeftCorner.y);
+                    const w2 = Math.hypot(corners.bottomRightCorner.x - corners.bottomLeftCorner.x, corners.bottomRightCorner.y - corners.bottomLeftCorner.y);
+                    const targetWidth = Math.round(Math.max(w1, w2));
+                    
+                    const h1 = Math.hypot(corners.bottomLeftCorner.x - corners.topLeftCorner.x, corners.bottomLeftCorner.y - corners.topLeftCorner.y);
+                    const h2 = Math.hypot(corners.bottomRightCorner.x - corners.topRightCorner.x, corners.bottomRightCorner.y - corners.topRightCorner.y);
+                    const targetHeight = Math.round(Math.max(h1, h2));
+                    
+                    // Warp and extract paper!
+                    const resultCanvas = scannerInstance.extractPaper(cropperImage, targetWidth, targetHeight, corners);
+                    
+                    cropCanvas.width = targetWidth;
+                    cropCanvas.height = targetHeight;
+                    ctx.drawImage(resultCanvas, 0, 0);
+                    
+                    page.cropBox = {
+                        x: Math.round(Math.min(corners.topLeftCorner.x, corners.bottomLeftCorner.x)),
+                        y: Math.round(Math.min(corners.topLeftCorner.y, corners.topRightCorner.y)),
+                        w: targetWidth,
+                        h: targetHeight
+                    };
+                } catch (err) {
+                    console.error("Warp perspective failed, falling back to bounding rect crop:", err);
+                    fallbackRectCrop();
+                }
+            } else {
+                fallbackRectCrop();
+            }
             
             // Convert cropped image into scanned page using local adaptive binarization
             applyAdaptiveThreshold(cropCanvas);
