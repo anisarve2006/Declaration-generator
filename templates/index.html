@@ -862,465 +862,353 @@
             text-align: center;
         }
 
-        /* Camera Modal Layout */
+        /* Premium Minimalist Document Scanner Styles */
         .camera-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(15, 23, 42, 0.96);
+            background: #000000;
             z-index: 10000;
             display: none;
-            grid-template-columns: 320px 1fr;
+            flex-direction: column;
             font-family: 'Plus Jakarta Sans', sans-serif;
             color: white;
+            overflow: hidden;
+            box-sizing: border-box;
         }
         
         .camera-modal.active {
-            display: grid;
-        }
-        
-        .camera-sidebar {
-            background: #1E293B;
-            border-right: 1px solid #334155;
-            padding: 24px;
             display: flex;
-            flex-direction: column;
-            gap: 20px;
-            overflow-y: auto;
-            box-sizing: border-box;
         }
         
-        .camera-sidebar h3 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            background: linear-gradient(135deg, #38BDF8 0%, #818CF8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .camera-select-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        
-        .camera-select-group label {
-            font-size: 11px;
-            font-weight: 600;
-            color: #94A3B8;
-            text-transform: uppercase;
-        }
-        
-        .camera-select-group select {
-            background: #0F172A;
-            border: 1px solid #475569;
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            outline: none;
-            cursor: pointer;
-        }
-        
-        .btn-capture {
-            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-        
-        .btn-capture:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
-        }
-        
-        .modal-gallery-container {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-height: 200px;
-        }
-        
-        .modal-gallery-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: #94A3B8;
-            text-transform: uppercase;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 6px;
-        }
-        
-        .modal-gallery-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            overflow-y: auto;
-            max-height: 350px;
-            padding-right: 4px;
-        }
-        
-        .modal-gallery-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #0F172A;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            position: relative;
-            cursor: pointer;
-            transition: border-color 0.2s ease;
-            box-sizing: border-box;
-        }
-        
-        .modal-gallery-item:hover, .modal-gallery-item.active {
-            border-color: #6366F1;
-        }
-        
-        .modal-gallery-item img {
-            width: 45px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 4px;
-            background: #334155;
-        }
-        
-        .modal-gallery-item-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        
-        .modal-gallery-item-name {
-            font-size: 12.5px;
-            font-weight: 600;
-        }
-        
-        .modal-gallery-item-status {
-            font-size: 10px;
-            font-weight: 700;
-            color: #EF4444;
-            text-transform: uppercase;
-        }
-        
-        .modal-gallery-item-status.cropped {
-            color: #10B981;
-        }
-
-        .modal-gallery-item-delete {
+        /* Top Header */
+        .scanner-header {
             position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: transparent;
-            border: none;
-            color: #64748B;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 4px;
-        }
-        
-        .modal-gallery-item-delete:hover {
-            color: #EF4444;
-        }
-        
-        .btn-modal-done {
-            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            margin-top: auto;
-        }
-
-        /* Camera / Crop Workspace Panel */
-        .camera-workspace {
-            display: flex;
-            flex-direction: column;
-            background: #0F172A;
-            position: relative;
-            height: 100%;
-        }
-        
-        .workspace-header {
-            background: #1E293B;
-            border-bottom: 1px solid #334155;
-            padding: 16px 24px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 0 20px;
+            z-index: 10100;
+            box-sizing: border-box;
         }
         
-        .workspace-title {
-            font-size: 16px;
+        .scanner-title {
+            font-size: 15px;
             font-weight: 600;
-            color: white;
+            letter-spacing: 0.5px;
+            color: #E2E8F0;
         }
         
-        .workspace-close {
+        .scanner-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .camera-select-wrapper {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 4px 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .camera-select-wrapper select {
             background: transparent;
             border: none;
-            color: #94A3B8;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        
-        .workspace-close:hover {
             color: white;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+            padding-right: 5px;
         }
         
-        .workspace-body {
-            flex-grow: 1;
+        .scanner-close-btn {
+            background: transparent;
+            border: none;
+            color: #E2E8F0;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            overflow: hidden;
-            position: relative;
+            padding: 6px;
+            border-radius: 50%;
+            transition: background 0.2s;
         }
         
-        .video-container, .crop-container {
+        .scanner-close-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Workspace occupies full viewport */
+        .scanner-workspace {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #000000;
+        }
+        
+        .scanner-panel {
             width: 100%;
             height: 100%;
             display: none;
             align-items: center;
             justify-content: center;
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
         
-        .video-container.active, .crop-container.active {
+        .scanner-panel.active {
             display: flex;
         }
         
         video {
-            max-width: 100%;
-            max-height: 100%;
-            border-radius: 12px;
-            border: 2px solid #334155;
-            background: black;
-            transform: scaleX(1);
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #000000;
         }
         
         .video-overlay {
             position: absolute;
-            border: 2px dashed rgba(255, 255, 255, 0.5);
-            border-radius: 8px;
+            border: 2px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
             pointer-events: none;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
-            width: min(70%, 420px);
-            height: min(85%, 580px);
-        }
-        
-        .video-overlay::after {
-            content: "Align Paper Page Here";
-            position: absolute;
-            bottom: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: 12px;
-            font-weight: 600;
-            background: rgba(15, 23, 42, 0.85);
-            padding: 4px 12px;
-            border-radius: 4px;
-            white-space: nowrap;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            /* Standard A4 aspect ratio helper */
+            width: min(75vw, 420px);
+            height: min(75vh, 580px);
         }
 
         .cropper-canvas {
-            max-width: 100%;
-            max-height: 100%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 90%;
+            max-height: 80%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
             border-radius: 8px;
-            background: #1e293b;
+            background: #000000;
         }
-        
-        .workspace-footer {
-            background: #1E293B;
-            border-top: 1px solid #334155;
-            padding: 16px 24px;
+
+        /* Floating Gallery Preview above footer */
+        .scanner-gallery-container {
+            position: absolute;
+            bottom: 125px;
+            left: 0;
+            width: 100%;
+            padding: 10px 20px;
+            box-sizing: border-box;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+            z-index: 10050;
             display: flex;
             justify-content: center;
-            gap: 16px;
         }
         
-        .btn-workspace-action {
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 13.5px;
-            font-weight: 600;
+        .scanner-gallery-list {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            max-width: 100%;
+            padding: 6px;
+            box-sizing: border-box;
+        }
+        
+        .scanner-gallery-item {
+            position: relative;
+            width: 55px;
+            height: 75px;
+            border-radius: 6px;
+            border: 1.5px solid rgba(255,255,255,0.4);
+            background: #1E293B;
+            overflow: hidden;
+            flex-shrink: 0;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+        
+        .scanner-gallery-item.active {
+            border-color: #6366F1;
+            box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+        }
+        
+        .scanner-gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .scanner-gallery-item-delete {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(239, 68, 68, 0.85);
+            color: white;
             border: none;
-            transition: all 0.2s ease;
-        }
-        
-        .btn-workspace-action.primary {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .btn-workspace-action.primary:hover {
-            background: var(--primary-hover);
-        }
-        
-        .btn-workspace-action.secondary {
-            background: #475569;
-            color: white;
-        }
-        
-        .btn-workspace-action.secondary:hover {
-            background: #334155;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
 
-        .btn-workspace-action.success {
-            background: var(--secondary);
-            color: white;
+        /* Bottom Controls Bar */
+        .scanner-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 110px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10100;
+            padding: 0 30px;
+            box-sizing: border-box;
+            border-top: 1px solid rgba(255,255,255,0.08);
         }
         
-        .btn-workspace-action.success:hover {
-            background: var(--secondary-hover);
+        .footer-control-group {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 480px;
+        }
+        
+        .footer-control-group.active {
+            display: flex;
+        }
+        
+        /* Shutter Circular Button */
+        .shutter-btn {
+            background: transparent;
+            border: 4px solid white;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: transform 0.15s ease;
+        }
+        
+        .shutter-btn:active {
+            transform: scale(0.92);
+        }
+        
+        .shutter-inner {
+            background: white;
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        
+        .shutter-btn:hover .shutter-inner {
+            background: #E2E8F0;
+        }
+        
+        /* Minimalist Action Buttons */
+        .scanner-action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .scanner-action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .scanner-action-btn.success {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #10B981;
+        }
+        
+        .scanner-action-btn.success:hover {
+            background: rgba(16, 185, 129, 0.35);
+            transform: translateY(-2px);
+        }
+        
+        .footer-gallery-preview {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            overflow: hidden;
+            background: rgba(255,255,255,0.05);
+            transition: transform 0.2s;
+        }
+        
+        .footer-gallery-preview:hover {
+            transform: translateY(-2px);
+        }
+        
+        .footer-gallery-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .gallery-preview-placeholder {
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .gallery-preview-placeholder::after {
+            content: "🖼️";
+            font-size: 18px;
+            opacity: 0.6;
         }
 
-        /* Mobile View Responsiveness */
-        @media (max-width: 768px) {
-            .camera-modal {
-                grid-template-columns: 1fr;
-                grid-template-rows: 1fr 180px;
-                height: 100vh;
-                height: -webkit-fill-available;
-            }
-            
-            .camera-sidebar {
-                border-right: none;
-                border-top: 1px solid #334155;
-                padding: 12px 16px;
-                flex-direction: row;
-                align-items: center;
-                gap: 12px;
-                height: 180px;
-                overflow-y: hidden;
-                overflow-x: auto;
-                box-sizing: border-box;
-            }
-            
-            .camera-sidebar h3, .camera-sidebar p {
-                display: none;
-            }
-            
-            .camera-select-group {
-                min-width: 100px;
-                flex-grow: 1;
-            }
-            
-            .camera-select-group select {
-                padding: 8px;
-                font-size: 12px;
-            }
-            
-            .btn-capture {
-                padding: 12px 15px;
-                font-size: 13px;
-                order: 2;
-                white-space: nowrap;
-            }
-            
-            .modal-gallery-container {
-                min-height: auto;
-                flex-grow: 2;
-                width: auto;
-                margin: 0;
-            }
-            
-            .modal-gallery-title {
-                display: none;
-            }
-            
-            .modal-gallery-list {
-                flex-direction: row;
-                max-height: 80px;
-                overflow-x: auto;
-                overflow-y: hidden;
-                padding-bottom: 0;
-                align-items: center;
-                gap: 8px;
-            }
-            
-            .modal-gallery-item {
-                padding: 4px;
-                flex-direction: row;
-                align-items: center;
-                min-width: 70px;
-                max-height: 55px;
-            }
-            
-            .modal-gallery-item img {
-                width: 30px;
-                height: 40px;
-            }
-            
-            .modal-gallery-item-info {
-                display: none;
-            }
-            
-            .modal-gallery-item-delete {
-                right: 2px;
-                top: 2px;
-                transform: none;
-                font-size: 11px;
-            }
-            
-            .btn-modal-done {
-                order: 3;
-                padding: 12px 15px;
-                font-size: 13px;
-                margin-top: 0;
-                white-space: nowrap;
-            }
-            
-            .workspace-header {
-                padding: 10px 16px;
-            }
-            
-            .workspace-title {
-                font-size: 13px;
-            }
-            
-            .workspace-body {
-                padding: 10px;
-            }
-            
+        @media (max-width: 500px) {
             .video-overlay {
-                width: min(85%, 280px);
-                height: min(85%, 380px);
+                width: min(85vw, 290px);
+                height: min(85vh, 420px);
             }
-            
-            .workspace-footer {
-                padding: 12px;
+            .scanner-footer {
+                padding: 0 15px;
             }
-            
-            .btn-workspace-action {
-                padding: 8px 12px;
-                font-size: 11.5px;
+        }
+
+        @media (max-width: 600px) {
+            .btn-group {
+                flex-direction: column;
+                gap: 10px;
             }
-            
-            #crop-footer-controls {
-                flex-wrap: wrap;
-                gap: 8px !important;
-                justify-content: center;
+            .btn-group button {
+                width: 100% !important;
             }
         }
 
@@ -2313,7 +2201,6 @@
             
             capturedPages.push(newPage);
             renderModalGallery();
-            openCropEditor(capturedPages.length - 1);
         }
 
         function openCropEditor(index) {
@@ -2665,73 +2552,108 @@
             switchToVideoView();
         }
 
+        function toggleScannerGallery() {
+            const container = document.getElementById('scanner-gallery-container');
+            if (container.style.display === 'none') {
+                container.style.display = 'flex';
+                renderModalGallery();
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
         function switchToVideoView() {
             document.getElementById('workspace-state-title').innerText = "Webcam Live Feed";
             document.getElementById('video-container').classList.add('active');
             document.getElementById('crop-container').classList.remove('active');
-            document.getElementById('camera-footer-controls').style.display = 'flex';
-            document.getElementById('crop-footer-controls').style.display = 'none';
+            
+            const camCtrls = document.getElementById('camera-footer-controls');
+            const cropCtrls = document.getElementById('crop-footer-controls');
+            camCtrls.classList.add('active');
+            camCtrls.style.display = 'flex';
+            cropCtrls.classList.remove('active');
+            cropCtrls.style.display = 'none';
+            
+            // Show previews automatically if we have pages
+            const galleryContainer = document.getElementById('scanner-gallery-container');
+            if (capturedPages.length > 0) {
+                galleryContainer.style.display = 'flex';
+            }
+            
             currentEditingIndex = -1;
             startCamera();
         }
         
         function switchToCropView() {
-            document.getElementById('workspace-state-title').innerText = "Crop & Fine-Tune Document Page";
+            document.getElementById('workspace-state-title').innerText = "Edit Crop Margins";
             document.getElementById('video-container').classList.remove('active');
             document.getElementById('crop-container').classList.add('active');
-            document.getElementById('camera-footer-controls').style.display = 'none';
-            document.getElementById('crop-footer-controls').style.display = 'flex';
+            
+            const camCtrls = document.getElementById('camera-footer-controls');
+            const cropCtrls = document.getElementById('crop-footer-controls');
+            camCtrls.classList.remove('active');
+            camCtrls.style.display = 'none';
+            cropCtrls.classList.add('active');
+            cropCtrls.style.display = 'flex';
+            
+            // Hide preview gallery container when in crop editor to have full focus on cropping handles
+            document.getElementById('scanner-gallery-container').style.display = 'none';
+            
             stopCamera();
         }
 
         function renderModalGallery() {
-            const listEl = document.getElementById('modal-gallery-list');
+            const listEl = document.getElementById('scanner-gallery-list');
+            if (!listEl) return;
             listEl.innerHTML = '';
+            
+            const galleryContainer = document.getElementById('scanner-gallery-container');
+            const previewBtn = document.getElementById('gallery-preview-btn');
+            
             document.getElementById('modal-gallery-count').innerText = capturedPages.length;
             
+            if (capturedPages.length === 0) {
+                if (galleryContainer) galleryContainer.style.display = 'none';
+                if (previewBtn) previewBtn.innerHTML = '<div class="gallery-preview-placeholder"></div>';
+                return;
+            }
+            
+            // Show preview launcher (last captured page thumbnail)
+            if (previewBtn) {
+                const lastPage = capturedPages[capturedPages.length - 1];
+                previewBtn.innerHTML = `<img src="${lastPage.croppedDataUrl || lastPage.originalDataUrl}">`;
+            }
+            
+            if (galleryContainer && galleryContainer.style.display !== 'none') {
+                galleryContainer.style.display = 'flex';
+            }
+            
+            // Populate list
             capturedPages.forEach((page, index) => {
                 const item = document.createElement('div');
-                item.className = 'modal-gallery-item';
+                item.className = 'scanner-gallery-item';
                 if (index === currentEditingIndex) item.className += ' active';
                 
                 const img = document.createElement('img');
                 img.src = page.croppedDataUrl || page.originalDataUrl;
-                
-                const info = document.createElement('div');
-                info.className = 'modal-gallery-item-info';
-                
-                const name = document.createElement('div');
-                name.className = 'modal-gallery-item-name';
-                name.innerText = `Page ${index + 1}`;
-                
-                const status = document.createElement('div');
-                if (page.isCropped) {
-                    status.className = 'modal-gallery-item-status cropped';
-                    status.innerText = 'Cropped';
-                } else {
-                    status.className = 'modal-gallery-item-status';
-                    status.innerText = 'Uncropped';
-                }
-                
-                info.appendChild(name);
-                info.appendChild(status);
                 item.appendChild(img);
-                item.appendChild(info);
                 
-                item.addEventListener('click', function(e) {
-                    if (e.target.closest('.modal-gallery-item-delete')) return;
-                    openCropEditor(index);
-                });
-                
+                // Delete button
                 const delBtn = document.createElement('button');
                 delBtn.type = 'button';
-                delBtn.className = 'modal-gallery-item-delete';
+                delBtn.className = 'scanner-gallery-item-delete';
                 delBtn.innerHTML = '✕';
                 delBtn.onclick = function(e) {
                     e.stopPropagation();
                     deletePage(index);
                 };
                 item.appendChild(delBtn);
+                
+                // Click to open editor
+                item.onclick = function() {
+                    openCropEditor(index);
+                };
+                
                 listEl.appendChild(item);
             });
         }
@@ -2910,75 +2832,86 @@
 
 <!-- CAMERA CAPTURE & CROP MODAL -->
 <div id="camera-modal" class="camera-modal">
-    <div class="camera-sidebar">
-        <div>
-            <h3>Document Scanner</h3>
-            <p style="font-size: 11.5px; color: #94A3B8; margin-top: 4px;">Capture page scans of your assignment sheet by sheet.</p>
+    <!-- Top Header Bar -->
+    <div class="scanner-header">
+        <div class="scanner-title">
+            <span id="workspace-state-title">Webcam Live Feed</span>
+            <span id="modal-gallery-count" style="display: none;">0</span>
         </div>
-        
-        <div class="camera-select-group">
-            <label for="camera-select">Webcam Source</label>
-            <select id="camera-select" onchange="switchCamera()"></select>
-        </div>
-        
-        <button type="button" class="btn-capture" onclick="capturePhoto()">
-            📸 Capture Page
-        </button>
-        
-        <div class="modal-gallery-container">
-            <div class="modal-gallery-title">Captured Pages (<span id="modal-gallery-count">0</span>)</div>
-            <div id="modal-gallery-list" class="modal-gallery-list">
-                <!-- Dynamic scan items go here -->
+        <div class="scanner-header-actions">
+            <!-- Camera select dropdown, styled minimally -->
+            <div class="camera-select-wrapper" id="camera-select-container">
+                <select id="camera-select" onchange="switchCamera()"></select>
             </div>
+            <!-- Close button -->
+            <button type="button" class="scanner-close-btn" onclick="closeCameraModal()" title="Close Scanner">
+                <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
         </div>
-        
-        <button type="button" class="btn-modal-done" onclick="closeCameraModal()">
-            💾 Save & Close
-        </button>
     </div>
-    
-    <div class="camera-workspace">
-        <div class="workspace-header">
-            <div id="workspace-state-title" class="workspace-title">Webcam Live Feed</div>
-            <button type="button" class="workspace-close" onclick="closeCameraModal()">✕</button>
+
+    <!-- Main Viewfinder Workspace -->
+    <div class="scanner-workspace">
+        <!-- Live Video View -->
+        <div id="video-container" class="scanner-panel active">
+            <video id="webcam-video" autoplay playsinline></video>
+            <div class="video-overlay"></div>
         </div>
         
-        <div class="workspace-body">
-            <!-- Video stream container -->
-            <div id="video-container" class="video-container active">
-                <video id="webcam-video" autoplay playsinline></video>
-                <div class="video-overlay"></div>
+        <!-- Cropping Canvas View -->
+        <div id="crop-container" class="scanner-panel">
+            <canvas id="cropper-canvas" class="cropper-canvas"></canvas>
+        </div>
+    </div>
+
+    <!-- Floating Gallery Thumbnails -->
+    <div id="scanner-gallery-container" class="scanner-gallery-container" style="display: none;">
+        <div id="scanner-gallery-list" class="scanner-gallery-list">
+            <!-- Thumbnail list -->
+        </div>
+    </div>
+
+    <!-- Bottom Controls Footer -->
+    <div class="scanner-footer">
+        <!-- Controls for Video Mode -->
+        <div id="camera-footer-controls" class="footer-control-group active">
+            <!-- Thumbnail gallery launcher (left) -->
+            <div class="footer-gallery-preview" onclick="toggleScannerGallery()" id="gallery-preview-btn">
+                <div class="gallery-preview-placeholder"></div>
             </div>
             
-            <!-- Cropping canvas container -->
-            <div id="crop-container" class="crop-container">
-                <canvas id="cropper-canvas" class="cropper-canvas"></canvas>
-            </div>
+            <!-- Shutter Button (center) -->
+            <button type="button" class="shutter-btn" onclick="capturePhoto()" title="Capture Page">
+                <div class="shutter-inner"></div>
+            </button>
+            
+            <!-- Save and Finish Button (right) -->
+            <button type="button" class="scanner-action-btn success" onclick="closeCameraModal()" title="Save & Exit">
+                <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            </button>
         </div>
         
-        <div class="workspace-body-footer" style="padding: 10px; background: #1E293B; display: none;"></div>
-        
-        <div class="workspace-footer">
-            <!-- Buttons visible in camera mode -->
-            <div id="camera-footer-controls" style="display: flex; gap: 15px;">
-                <span style="font-size: 13px; color: #94A3B8;">Hold your document steady in front of the camera and click Capture Page.</span>
-            </div>
+        <!-- Controls for Cropping Mode -->
+        <div id="crop-footer-controls" class="footer-control-group">
+            <!-- Auto Crop (left) -->
+            <button type="button" class="scanner-action-btn" onclick="autoCropSelectedImage()" title="Smart Auto Crop">
+                <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M7.5 5.6L10 7 8.6 4.5 10 2 7.5 3.4 5 2l1.4 2.5L5 7zm12 9.8L17 14l1.4 2.5-1.4 2.5 2.5-1.4 2.5 1.4-1.4-2.5zm0-9.2L17 5l1.4 2.5-1.4 2.5 2.5-1.4 2.5 1.4-1.4-2.5zM14.06 9.94L3 21h3l11.06-11.06zm4.24-4.24l-1.41-1.41-2.12 2.12 1.41 1.41z"/></svg>
+            </button>
             
-            <!-- Buttons visible in cropping mode -->
-            <div id="crop-footer-controls" style="display: none; gap: 15px; width: 100%; justify-content: center;">
-                <button type="button" class="btn-workspace-action secondary" onclick="autoCropSelectedImage()">
-                    ⚡ Smart Auto Crop
-                </button>
-                <button type="button" class="btn-workspace-action secondary" onclick="resetCropSelectedImage()">
-                    🔄 Reset Crop
-                </button>
-                <button type="button" class="btn-workspace-action success" onclick="applyAndConfirmCrop()">
-                    ✅ Apply & Confirm
-                </button>
-                <button type="button" class="btn-workspace-action secondary" onclick="cancelCropMode()">
-                    ❌ Back to Video
-                </button>
-            </div>
+            <!-- Reset Crop (center-left) -->
+            <button type="button" class="scanner-action-btn" onclick="resetCropSelectedImage()" title="Reset Crop">
+                <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+            </button>
+            
+            <!-- Confirm Crop (center-right) -->
+            <button type="button" class="scanner-action-btn success" onclick="applyAndConfirmCrop()" title="Apply & Confirm">
+                <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            </button>
+            
+            <!-- Capture More (right) - goes back to video mode -->
+            <button type="button" class="scanner-action-btn" onclick="cancelCropMode()" title="Capture More / Back">
+                <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </button>
         </div>
     </div>
 </div>
