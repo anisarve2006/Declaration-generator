@@ -660,6 +660,587 @@
                 background: #FFFFFF !important;
             }
         }
+
+        /* Camera Trigger and Gallery Styles */
+        .btn-camera-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 14.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+            margin-bottom: 5px;
+        }
+        
+        .btn-camera-trigger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+        }
+        
+        .captured-gallery {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            overflow-x: auto;
+            padding: 8px 4px;
+            min-height: 50px;
+        }
+        
+        .gallery-item {
+            position: relative;
+            width: 90px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            background: #f1f5f9;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .gallery-item .badge {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background: var(--secondary);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        
+        .gallery-item .badge.uncropped {
+            background: #EF4444;
+        }
+        
+        .gallery-item .btn-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        
+        .gallery-item .btn-edit {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            right: 4px;
+            background: rgba(15, 23, 42, 0.85);
+            color: white;
+            border: none;
+            padding: 3px 0;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        /* Camera Modal Layout */
+        .camera-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.96);
+            z-index: 10000;
+            display: none;
+            grid-template-columns: 320px 1fr;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: white;
+        }
+        
+        .camera-modal.active {
+            display: grid;
+        }
+        
+        .camera-sidebar {
+            background: #1E293B;
+            border-right: 1px solid #334155;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        
+        .camera-sidebar h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #38BDF8 0%, #818CF8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .camera-select-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .camera-select-group label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #94A3B8;
+            text-transform: uppercase;
+        }
+        
+        .camera-select-group select {
+            background: #0F172A;
+            border: 1px solid #475569;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .btn-capture {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .btn-capture:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
+        
+        .modal-gallery-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 200px;
+        }
+        
+        .modal-gallery-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #94A3B8;
+            text-transform: uppercase;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 6px;
+        }
+        
+        .modal-gallery-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            max-height: 350px;
+            padding-right: 4px;
+        }
+        
+        .modal-gallery-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #0F172A;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            position: relative;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+            box-sizing: border-box;
+        }
+        
+        .modal-gallery-item:hover, .modal-gallery-item.active {
+            border-color: #6366F1;
+        }
+        
+        .modal-gallery-item img {
+            width: 45px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #334155;
+        }
+        
+        .modal-gallery-item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .modal-gallery-item-name {
+            font-size: 12.5px;
+            font-weight: 600;
+        }
+        
+        .modal-gallery-item-status {
+            font-size: 10px;
+            font-weight: 700;
+            color: #EF4444;
+            text-transform: uppercase;
+        }
+        
+        .modal-gallery-item-status.cropped {
+            color: #10B981;
+        }
+
+        .modal-gallery-item-delete {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #64748B;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        
+        .modal-gallery-item-delete:hover {
+            color: #EF4444;
+        }
+        
+        .btn-modal-done {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        /* Camera / Crop Workspace Panel */
+        .camera-workspace {
+            display: flex;
+            flex-direction: column;
+            background: #0F172A;
+            position: relative;
+            height: 100%;
+        }
+        
+        .workspace-header {
+            background: #1E293B;
+            border-bottom: 1px solid #334155;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .workspace-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .workspace-close {
+            background: transparent;
+            border: none;
+            color: #94A3B8;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .workspace-close:hover {
+            color: white;
+        }
+        
+        .workspace-body {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .video-container, .crop-container {
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .video-container.active, .crop-container.active {
+            display: flex;
+        }
+        
+        video {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 12px;
+            border: 2px solid #334155;
+            background: black;
+            transform: scaleX(1);
+        }
+        
+        .video-overlay {
+            position: absolute;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            pointer-events: none;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+            width: min(70%, 420px);
+            height: min(85%, 580px);
+        }
+        
+        .video-overlay::after {
+            content: "Align Paper Page Here";
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 4px 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .cropper-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 8px;
+            background: #1e293b;
+        }
+        
+        .workspace-footer {
+            background: #1E293B;
+            border-top: 1px solid #334155;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+        
+        .btn-workspace-action {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-workspace-action.primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-workspace-action.primary:hover {
+            background: var(--primary-hover);
+        }
+        
+        .btn-workspace-action.secondary {
+            background: #475569;
+            color: white;
+        }
+        
+        .btn-workspace-action.secondary:hover {
+            background: #334155;
+        }
+
+        .btn-workspace-action.success {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-workspace-action.success:hover {
+            background: var(--secondary-hover);
+        }
+
+        /* Mobile View Responsiveness */
+        @media (max-width: 768px) {
+            .camera-modal {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 180px;
+                height: 100vh;
+                height: -webkit-fill-available;
+            }
+            
+            .camera-sidebar {
+                border-right: none;
+                border-top: 1px solid #334155;
+                padding: 12px 16px;
+                flex-direction: row;
+                align-items: center;
+                gap: 12px;
+                height: 180px;
+                overflow-y: hidden;
+                overflow-x: auto;
+                box-sizing: border-box;
+            }
+            
+            .camera-sidebar h3, .camera-sidebar p {
+                display: none;
+            }
+            
+            .camera-select-group {
+                min-width: 100px;
+                flex-grow: 1;
+            }
+            
+            .camera-select-group select {
+                padding: 8px;
+                font-size: 12px;
+            }
+            
+            .btn-capture {
+                padding: 12px 15px;
+                font-size: 13px;
+                order: 2;
+                white-space: nowrap;
+            }
+            
+            .modal-gallery-container {
+                min-height: auto;
+                flex-grow: 2;
+                width: auto;
+                margin: 0;
+            }
+            
+            .modal-gallery-title {
+                display: none;
+            }
+            
+            .modal-gallery-list {
+                flex-direction: row;
+                max-height: 80px;
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding-bottom: 0;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .modal-gallery-item {
+                padding: 4px;
+                flex-direction: row;
+                align-items: center;
+                min-width: 70px;
+                max-height: 55px;
+            }
+            
+            .modal-gallery-item img {
+                width: 30px;
+                height: 40px;
+            }
+            
+            .modal-gallery-item-info {
+                display: none;
+            }
+            
+            .modal-gallery-item-delete {
+                right: 2px;
+                top: 2px;
+                transform: none;
+                font-size: 11px;
+            }
+            
+            .btn-modal-done {
+                order: 3;
+                padding: 12px 15px;
+                font-size: 13px;
+                margin-top: 0;
+                white-space: nowrap;
+            }
+            
+            .workspace-header {
+                padding: 10px 16px;
+            }
+            
+            .workspace-title {
+                font-size: 13px;
+            }
+            
+            .workspace-body {
+                padding: 10px;
+            }
+            
+            .video-overlay {
+                width: min(85%, 280px);
+                height: min(85%, 380px);
+            }
+            
+            .workspace-footer {
+                padding: 12px;
+            }
+            
+            .btn-workspace-action {
+                padding: 8px 12px;
+                font-size: 11.5px;
+            }
+            
+            #crop-footer-controls {
+                flex-wrap: wrap;
+                gap: 8px !important;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .btn-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .btn-group button {
+                width: 100% !important;
+            }
+        }
     </style>
 </head>
 
@@ -811,13 +1392,23 @@
                     </div>
                 </div>
 
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Capture Assignment Pages from Camera (Optional)</label>
+                    <button type="button" class="btn-camera-trigger" onclick="openCameraModal()">
+                        📸 Capture Pages via Camera
+                    </button>
+                    <div id="captured-gallery" class="captured-gallery">
+                        <span style="font-size: 13px; color: var(--text-muted); padding: 10px 0;">No pages captured yet.</span>
+                    </div>
+                </div>
+
                 <!-- Download Actions -->
 
                 <div class="btn-group">
-                    <button type="submit" name="format" value="docx" onclick="triggerButtonTransition(this, '.DOCX')" class="btn btn-primary">
+                    <button type="submit" name="format" value="docx" class="btn btn-primary">
                         📝 Download Word (.docx)
                     </button>
-                    <button type="submit" name="format" value="pdf" onclick="triggerButtonTransition(this, '.PDF')" class="btn btn-secondary">
+                    <button type="submit" name="format" value="pdf" class="btn btn-secondary">
                         📄 Download PDF (.pdf)
                     </button>
                 </div>
@@ -1472,7 +2063,781 @@
             loadCustomSubjects();
             updateSubjectDetails();
         }
-    </script>
+
+        // ----------------------------------------------------------------------
+        // CAMERA SCANNER & SMART CROPPER
+        // ----------------------------------------------------------------------
+        let activeStream = null;
+        let capturedPages = []; // Array of { id, originalDataUrl, croppedBlob, croppedDataUrl, cropBox, isCropped }
+        let currentEditingIndex = -1;
+        let activeVideoDevice = null;
+
+        let cropperImage = new Image();
+        let cropperCanvas = null;
+        let cropperCtx = null;
+        let cropHandles = []; 
+        let activeHandle = -1;
+        const handleRadius = 10;
+        let canvasScale = 1.0;
+
+        async function getCameraDevices() {
+            try {
+                await navigator.mediaDevices.getUserMedia({ video: true });
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                const selectEl = document.getElementById('camera-select');
+                selectEl.innerHTML = '';
+                
+                videoDevices.forEach(device => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Camera ${selectEl.length + 1}`;
+                    selectEl.appendChild(option);
+                });
+                
+                if (videoDevices.length > 0) {
+                    activeVideoDevice = videoDevices[0].deviceId;
+                }
+            } catch (err) {
+                console.error("Error getting camera devices: ", err);
+                alert("Camera access denied or unavailable. Please check your browser permissions.");
+            }
+        }
+        
+        async function startCamera() {
+            if (activeStream) {
+                stopCamera();
+            }
+            const constraints = {
+                video: {
+                    deviceId: activeVideoDevice ? { exact: activeVideoDevice } : undefined,
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
+                }
+            };
+            try {
+                const videoEl = document.getElementById('webcam-video');
+                activeStream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoEl.srcObject = activeStream;
+                videoEl.play();
+            } catch (err) {
+                console.error("Error starting camera: ", err);
+                try {
+                    activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    document.getElementById('webcam-video').srcObject = activeStream;
+                } catch (e) {
+                    alert("Could not start camera feed. Please check permissions or check if another app is using it.");
+                }
+            }
+        }
+        
+        function stopCamera() {
+            if (activeStream) {
+                activeStream.getTracks().forEach(track => track.stop());
+                activeStream = null;
+            }
+        }
+        
+        async function switchCamera() {
+            const selectEl = document.getElementById('camera-select');
+            activeVideoDevice = selectEl.value;
+            await startCamera();
+        }
+
+        async function openCameraModal() {
+            document.getElementById('camera-modal').classList.add('active');
+            await getCameraDevices();
+            await startCamera();
+            renderModalGallery();
+            switchToVideoView();
+        }
+        
+        function closeCameraModal() {
+            stopCamera();
+            document.getElementById('camera-modal').classList.remove('active');
+            renderMainGallery();
+        }
+
+        function capturePhoto() {
+            const videoEl = document.getElementById('webcam-video');
+            if (!videoEl.srcObject) return;
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = videoEl.videoWidth || 1280;
+            canvas.height = videoEl.videoHeight || 720;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+            
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+            
+            const newPage = {
+                id: Date.now() + Math.random().toString(36).substr(2, 5),
+                originalDataUrl: dataUrl,
+                croppedBlob: null,
+                croppedDataUrl: null,
+                cropBox: { x: 0, y: 0, w: canvas.width, h: canvas.height },
+                isCropped: false
+            };
+            
+            capturedPages.push(newPage);
+            renderModalGallery();
+            openCropEditor(capturedPages.length - 1);
+        }
+
+        function openCropEditor(index) {
+            currentEditingIndex = index;
+            const page = capturedPages[index];
+            switchToCropView();
+            
+            cropperCanvas = document.getElementById('cropper-canvas');
+            cropperCtx = cropperCanvas.getContext('2d');
+            
+            cropperImage.src = page.originalDataUrl;
+            cropperImage.onload = function() {
+                const container = document.getElementById('crop-container');
+                const maxW = container.clientWidth - 40;
+                const maxH = container.clientHeight - 40;
+                
+                const scale = Math.min(maxW / cropperImage.width, maxH / cropperImage.height);
+                cropperCanvas.width = cropperImage.width * scale;
+                cropperCanvas.height = cropperImage.height * scale;
+                canvasScale = scale;
+                
+                const box = page.cropBox;
+                cropHandles = [
+                    { x: box.x * scale, y: box.y * scale },
+                    { x: (box.x + box.w) * scale, y: box.y * scale },
+                    { x: (box.x + box.w) * scale, y: (box.y + box.h) * scale },
+                    { x: box.x * scale, y: (box.y + box.h) * scale }
+                ];
+                
+                drawCropper();
+                setupCropperListeners();
+                
+                if (!page.isCropped) {
+                    autoCropSelectedImage();
+                }
+            };
+        }
+
+        function setupCropperListeners() {
+            const oldCanvas = document.getElementById('cropper-canvas');
+            const newCanvas = oldCanvas.cloneNode(true);
+            oldCanvas.parentNode.replaceChild(newCanvas, oldCanvas);
+            
+            cropperCanvas = newCanvas;
+            cropperCtx = cropperCanvas.getContext('2d');
+            
+            cropperCanvas.addEventListener('mousedown', handleStart);
+            cropperCanvas.addEventListener('mousemove', handleMove);
+            cropperCanvas.addEventListener('mouseup', handleEnd);
+            
+            cropperCanvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                handleStart({ clientX: touch.clientX, clientY: touch.clientY });
+            }, { passive: false });
+            
+            cropperCanvas.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                handleMove({ clientX: touch.clientX, clientY: touch.clientY });
+            }, { passive: false });
+            
+            cropperCanvas.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                handleEnd();
+            }, { passive: false });
+        }
+
+        function getCanvasCoords(event) {
+            const rect = cropperCanvas.getBoundingClientRect();
+            return {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top
+            };
+        }
+        
+        function handleStart(e) {
+            const coords = getCanvasCoords(e);
+            activeHandle = -1;
+            for (let i = 0; i < 4; i++) {
+                const h = cropHandles[i];
+                if (Math.hypot(coords.x - h.x, coords.y - h.y) <= handleRadius + 5) {
+                    activeHandle = i;
+                    break;
+                }
+            }
+        }
+        
+        function handleMove(e) {
+            if (activeHandle === -1) {
+                const coords = getCanvasCoords(e);
+                let nearHandle = false;
+                for (let i = 0; i < 4; i++) {
+                    const h = cropHandles[i];
+                    if (Math.hypot(coords.x - h.x, coords.y - h.y) <= handleRadius + 5) {
+                        nearHandle = true;
+                        break;
+                    }
+                }
+                cropperCanvas.style.cursor = nearHandle ? 'pointer' : 'default';
+                return;
+            }
+            
+            const coords = getCanvasCoords(e);
+            const x = Math.max(0, Math.min(cropperCanvas.width, coords.x));
+            const y = Math.max(0, Math.min(cropperCanvas.height, coords.y));
+            
+            if (activeHandle === 0) { // TL
+                cropHandles[0].x = x; cropHandles[0].y = y;
+                cropHandles[1].y = y; cropHandles[3].x = x;
+            } else if (activeHandle === 1) { // TR
+                cropHandles[1].x = x; cropHandles[1].y = y;
+                cropHandles[0].y = y; cropHandles[2].x = x;
+            } else if (activeHandle === 2) { // BR
+                cropHandles[2].x = x; cropHandles[2].y = y;
+                cropHandles[3].y = y; cropHandles[1].x = x;
+            } else if (activeHandle === 3) { // BL
+                cropHandles[3].x = x; cropHandles[3].y = y;
+                cropHandles[2].y = y; cropHandles[0].x = x;
+            }
+            
+            drawCropper();
+        }
+        
+        function handleEnd() {
+            activeHandle = -1;
+        }
+
+        function drawCropper() {
+            cropperCtx.clearRect(0, 0, cropperCanvas.width, cropperCanvas.height);
+            cropperCtx.drawImage(cropperImage, 0, 0, cropperCanvas.width, cropperCanvas.height);
+            
+            const tl = cropHandles[0], tr = cropHandles[1], br = cropHandles[2], bl = cropHandles[3];
+            cropperCtx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+            cropperCtx.fillRect(0, 0, cropperCanvas.width, tl.y);
+            cropperCtx.fillRect(0, bl.y, cropperCanvas.width, cropperCanvas.height - bl.y);
+            cropperCtx.fillRect(0, tl.y, tl.x, bl.y - tl.y);
+            cropperCtx.fillRect(tr.x, tr.y, cropperCanvas.width - tr.x, br.y - tr.y);
+            
+            cropperCtx.strokeStyle = '#FFFFFF';
+            cropperCtx.lineWidth = 2.5;
+            cropperCtx.beginPath();
+            cropperCtx.moveTo(tl.x, tl.y);
+            cropperCtx.lineTo(tr.x, tr.y);
+            cropperCtx.lineTo(br.x, br.y);
+            cropperCtx.lineTo(bl.x, bl.y);
+            cropperCtx.closePath();
+            cropperCtx.stroke();
+            
+            cropperCtx.fillStyle = '#6366F1';
+            cropperCtx.strokeStyle = '#FFFFFF';
+            cropperCtx.lineWidth = 2;
+            for (let i = 0; i < 4; i++) {
+                const h = cropHandles[i];
+                cropperCtx.beginPath();
+                cropperCtx.arc(h.x, h.y, handleRadius, 0, 2 * Math.PI);
+                cropperCtx.fill();
+                cropperCtx.stroke();
+            }
+        }
+
+        function autoCropSelectedImage() {
+            const width = 300;
+            const height = Math.round(width * (cropperImage.height / cropperImage.width));
+            
+            const analyzer = document.createElement('canvas');
+            analyzer.width = width;
+            analyzer.height = height;
+            const actx = analyzer.getContext('2d');
+            actx.drawImage(cropperImage, 0, 0, width, height);
+            
+            const imgData = actx.getImageData(0, 0, width, height);
+            const data = imgData.data;
+            
+            const gray = new Uint8Array(width * height);
+            let minB = 255, maxB = 0, sumB = 0;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                const b = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+                gray[i/4] = b;
+                if (b < minB) minB = b;
+                if (b > maxB) maxB = b;
+                sumB += b;
+            }
+            
+            const threshold = minB + (maxB - minB) * 0.35;
+            
+            let cropLeft = 0;
+            for (let x = 0; x < width / 2; x++) {
+                let colSum = 0;
+                for (let y = 0; y < height; y++) colSum += gray[y * width + x];
+                if ((colSum / height) > threshold) { cropLeft = x; break; }
+            }
+            
+            let cropRight = width - 1;
+            for (let x = width - 1; x > width / 2; x--) {
+                let colSum = 0;
+                for (let y = 0; y < height; y++) colSum += gray[y * width + x];
+                if ((colSum / height) > threshold) { cropRight = x; break; }
+            }
+            
+            let cropTop = 0;
+            for (let y = 0; y < height / 2; y++) {
+                let rowSum = 0;
+                for (let x = 0; x < width; x++) rowSum += gray[y * width + x];
+                if ((rowSum / width) > threshold) { cropTop = y; break; }
+            }
+            
+            let cropBottom = height - 1;
+            for (let y = height - 1; y > height / 2; y--) {
+                let rowSum = 0;
+                for (let x = 0; x < width; x++) rowSum += gray[y * width + x];
+                if ((rowSum / width) > threshold) { cropBottom = y; break; }
+            }
+            
+            const padX = Math.round(width * 0.03);
+            const padY = Math.round(height * 0.03);
+            
+            const l = Math.max(0, cropLeft - padX);
+            const r = Math.min(width - 1, cropRight + padX);
+            const t = Math.max(0, cropTop - padY);
+            const b = Math.min(height - 1, cropBottom + padY);
+            
+            const scaleToCanvas = cropperCanvas.width / width;
+            
+            cropHandles = [
+                { x: l * scaleToCanvas, y: t * scaleToCanvas },
+                { x: r * scaleToCanvas, y: t * scaleToCanvas },
+                { x: r * scaleToCanvas, y: b * scaleToCanvas },
+                { x: l * scaleToCanvas, y: b * scaleToCanvas }
+            ];
+            
+            drawCropper();
+        }
+
+        function resetCropSelectedImage() {
+            cropHandles = [
+                { x: 0, y: 0 },
+                { x: cropperCanvas.width, y: 0 },
+                { x: cropperCanvas.width, y: cropperCanvas.height },
+                { x: 0, y: cropperCanvas.height }
+            ];
+            drawCropper();
+        }
+
+        function applyAdaptiveThreshold(canvas) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const imgData = ctx.getImageData(0, 0, width, height);
+            const data = imgData.data;
+            
+            const gray = new Uint8Array(width * height);
+            const integral = new Uint32Array(width * height);
+            
+            // 1. Generate grayscale and horizontal sum
+            for (let y = 0; y < height; y++) {
+                let sum = 0;
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    const g = Math.round(0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2]);
+                    gray[y * width + x] = g;
+                    
+                    sum += g;
+                    if (y === 0) {
+                        integral[y * width + x] = sum;
+                    } else {
+                        integral[y * width + x] = integral[(y - 1) * width + x] + sum;
+                    }
+                }
+            }
+            
+            // 2. Local thresholding using integral image (Bradley-Roth)
+            const S = Math.round(width / 12); // Local neighborhood (1/12th of width works best for standard scanned pages)
+            const t = 10; // Threshold offset (10% standard contrast threshold)
+            
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    
+                    const x1 = Math.max(0, x - S / 2);
+                    const x2 = Math.min(width - 1, x + S / 2);
+                    const y1 = Math.max(0, y - S / 2);
+                    const y2 = Math.min(height - 1, y + S / 2);
+                    
+                    const count = (x2 - x1) * (y2 - y1);
+                    let sum = integral[y2 * width + x2];
+                    if (x1 > 0) sum -= integral[y2 * width + (x1 - 1)];
+                    if (y1 > 0) sum -= integral[(y1 - 1) * width + x2];
+                    if (x1 > 0 && y1 > 0) sum += integral[(y1 - 1) * width + (x1 - 1)];
+                    
+                    const avg = sum / count;
+                    const val = (gray[y * width + x] < (avg * (100 - t) / 100)) ? 0 : 255;
+                    
+                    data[idx] = val;
+                    data[idx+1] = val;
+                    data[idx+2] = val;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        function applyAndConfirmCrop() {
+            const page = capturedPages[currentEditingIndex];
+            
+            const x = Math.min(cropHandles[0].x, cropHandles[3].x) / canvasScale;
+            const y = Math.min(cropHandles[0].y, cropHandles[1].y) / canvasScale;
+            const w = Math.max(cropHandles[1].x, cropHandles[2].x) / canvasScale - x;
+            const h = Math.max(cropHandles[3].y, cropHandles[2].y) / canvasScale - y;
+            
+            page.cropBox = {
+                x: Math.max(0, Math.round(x)),
+                y: Math.max(0, Math.round(y)),
+                w: Math.min(cropperImage.width - Math.round(x), Math.round(w)),
+                h: Math.min(cropperImage.height - Math.round(y), Math.round(h))
+            };
+            
+            const cropCanvas = document.createElement('canvas');
+            cropCanvas.width = page.cropBox.w;
+            cropCanvas.height = page.cropBox.h;
+            const ctx = cropCanvas.getContext('2d');
+            
+            ctx.drawImage(
+                cropperImage,
+                page.cropBox.x,
+                page.cropBox.y,
+                page.cropBox.w,
+                page.cropBox.h,
+                0,
+                0,
+                page.cropBox.w,
+                page.cropBox.h
+            );
+            
+            // Convert cropped image into scanned page using local adaptive binarization
+            applyAdaptiveThreshold(cropCanvas);
+            
+            page.croppedDataUrl = cropCanvas.toDataURL('image/jpeg', 0.9);
+            page.isCropped = true;
+            
+            cropCanvas.toBlob(function(blob) {
+                page.croppedBlob = blob;
+                renderModalGallery();
+                switchToVideoView();
+            }, 'image/jpeg', 0.9);
+        }
+
+        function cancelCropMode() {
+            switchToVideoView();
+        }
+
+        function switchToVideoView() {
+            document.getElementById('workspace-state-title').innerText = "Webcam Live Feed";
+            document.getElementById('video-container').classList.add('active');
+            document.getElementById('crop-container').classList.remove('active');
+            document.getElementById('camera-footer-controls').style.display = 'flex';
+            document.getElementById('crop-footer-controls').style.display = 'none';
+            currentEditingIndex = -1;
+            startCamera();
+        }
+        
+        function switchToCropView() {
+            document.getElementById('workspace-state-title').innerText = "Crop & Fine-Tune Document Page";
+            document.getElementById('video-container').classList.remove('active');
+            document.getElementById('crop-container').classList.add('active');
+            document.getElementById('camera-footer-controls').style.display = 'none';
+            document.getElementById('crop-footer-controls').style.display = 'flex';
+            stopCamera();
+        }
+
+        function renderModalGallery() {
+            const listEl = document.getElementById('modal-gallery-list');
+            listEl.innerHTML = '';
+            document.getElementById('modal-gallery-count').innerText = capturedPages.length;
+            
+            capturedPages.forEach((page, index) => {
+                const item = document.createElement('div');
+                item.className = 'modal-gallery-item';
+                if (index === currentEditingIndex) item.className += ' active';
+                
+                const img = document.createElement('img');
+                img.src = page.croppedDataUrl || page.originalDataUrl;
+                
+                const info = document.createElement('div');
+                info.className = 'modal-gallery-item-info';
+                
+                const name = document.createElement('div');
+                name.className = 'modal-gallery-item-name';
+                name.innerText = `Page ${index + 1}`;
+                
+                const status = document.createElement('div');
+                if (page.isCropped) {
+                    status.className = 'modal-gallery-item-status cropped';
+                    status.innerText = 'Cropped';
+                } else {
+                    status.className = 'modal-gallery-item-status';
+                    status.innerText = 'Uncropped';
+                }
+                
+                info.appendChild(name);
+                info.appendChild(status);
+                item.appendChild(img);
+                item.appendChild(info);
+                
+                item.addEventListener('click', function(e) {
+                    if (e.target.closest('.modal-gallery-item-delete')) return;
+                    openCropEditor(index);
+                });
+                
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'modal-gallery-item-delete';
+                delBtn.innerHTML = '✕';
+                delBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    deletePage(index);
+                };
+                item.appendChild(delBtn);
+                listEl.appendChild(item);
+            });
+        }
+        
+        function deletePage(index) {
+            capturedPages.splice(index, 1);
+            if (currentEditingIndex === index) {
+                switchToVideoView();
+            } else if (currentEditingIndex > index) {
+                currentEditingIndex--;
+            }
+            renderModalGallery();
+        }
+
+        function renderMainGallery() {
+            const listEl = document.getElementById('captured-gallery');
+            listEl.innerHTML = '';
+            
+            if (capturedPages.length === 0) {
+                listEl.innerHTML = '<span style="font-size: 13px; color: var(--text-muted); padding: 10px 0;">No pages captured yet.</span>';
+                return;
+            }
+            
+            capturedPages.forEach((page, index) => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                
+                const img = document.createElement('img');
+                img.src = page.croppedDataUrl || page.originalDataUrl;
+                item.appendChild(img);
+                
+                const badge = document.createElement('span');
+                if (page.isCropped) {
+                    badge.className = 'badge';
+                    badge.innerText = 'Cropped';
+                } else {
+                    badge.className = 'badge uncropped';
+                    badge.innerText = 'Uncropped';
+                }
+                item.appendChild(badge);
+                
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'btn-remove';
+                delBtn.innerHTML = '✕';
+                delBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    capturedPages.splice(index, 1);
+                    renderMainGallery();
+                };
+                item.appendChild(delBtn);
+                
+                const editBtn = document.createElement('button');
+                editBtn.type = 'button';
+                editBtn.className = 'btn-edit';
+                editBtn.innerText = 'Edit Crop';
+                editBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    openCameraModal();
+                    openCropEditor(index);
+                };
+                item.appendChild(editBtn);
+                listEl.appendChild(item);
+            });
+        }
+
+        // Helper to convert dataURL to Blob
+        function dataURLtoBlob(dataurl) {
+            const arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], {type:mime});
+        }
+
+        // Form Submit Interceptor using Fetch API
+        document.getElementById('mainForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const submitBtn = event.submitter || document.activeElement;
+            const formatName = (submitBtn && submitBtn.value === 'pdf') ? 'PDF' : 'DOCX';
+            
+            prepareFormSubmission();
+            
+            const originalHTML = submitBtn.innerHTML;
+            submitBtn.classList.add('btn-loading');
+            submitBtn.innerHTML = `<span class="btn-spinner"></span> Generating ${formatName}...`;
+            
+            const formData = new FormData(this);
+            if (submitBtn && submitBtn.name === 'format') {
+                formData.set('format', submitBtn.value);
+            }
+            
+            capturedPages.forEach((page, index) => {
+                let fileBlob = page.croppedBlob;
+                if (!fileBlob) {
+                    try {
+                        const tempImg = new Image();
+                        tempImg.src = page.originalDataUrl;
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = tempImg.width || 1280;
+                        tempCanvas.height = tempImg.height || 720;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.drawImage(tempImg, 0, 0);
+                        applyAdaptiveThreshold(tempCanvas);
+                        fileBlob = dataURLtoBlob(tempCanvas.toDataURL('image/jpeg', 0.9));
+                    } catch (e) {
+                        fileBlob = dataURLtoBlob(page.originalDataUrl);
+                    }
+                }
+                formData.append('captured_pages', fileBlob, `page_${index + 1}.jpg`);
+            });
+            
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text || 'Generation failed');
+                }
+                
+                const contentDisposition = response.headers.get('content-disposition');
+                let filename = `Declaration-Form.${formatName.toLowerCase()}`;
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename="?([^";\n]+)"?/);
+                    if (match) {
+                        filename = match[1];
+                    }
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                
+                submitBtn.classList.remove('btn-loading');
+                submitBtn.classList.add('btn-success-anim');
+                submitBtn.innerHTML = `✅ ${formatName} Generated!`;
+                
+                setTimeout(() => {
+                    submitBtn.classList.remove('btn-success-anim');
+                    submitBtn.innerHTML = originalHTML;
+                }, 2500);
+                
+            } catch (err) {
+                console.error("Error generating document: ", err);
+                alert("Error generating document: " + err.message);
+                submitBtn.classList.remove('btn-loading');
+                submitBtn.innerHTML = originalHTML;
+            }
+        });
+</script>
+
+<!-- CAMERA CAPTURE & CROP MODAL -->
+<div id="camera-modal" class="camera-modal">
+    <div class="camera-sidebar">
+        <div>
+            <h3>Document Scanner</h3>
+            <p style="font-size: 11.5px; color: #94A3B8; margin-top: 4px;">Capture page scans of your assignment sheet by sheet.</p>
+        </div>
+        
+        <div class="camera-select-group">
+            <label for="camera-select">Webcam Source</label>
+            <select id="camera-select" onchange="switchCamera()"></select>
+        </div>
+        
+        <button type="button" class="btn-capture" onclick="capturePhoto()">
+            📸 Capture Page
+        </button>
+        
+        <div class="modal-gallery-container">
+            <div class="modal-gallery-title">Captured Pages (<span id="modal-gallery-count">0</span>)</div>
+            <div id="modal-gallery-list" class="modal-gallery-list">
+                <!-- Dynamic scan items go here -->
+            </div>
+        </div>
+        
+        <button type="button" class="btn-modal-done" onclick="closeCameraModal()">
+            💾 Save & Close
+        </button>
+    </div>
+    
+    <div class="camera-workspace">
+        <div class="workspace-header">
+            <div id="workspace-state-title" class="workspace-title">Webcam Live Feed</div>
+            <button type="button" class="workspace-close" onclick="closeCameraModal()">✕</button>
+        </div>
+        
+        <div class="workspace-body">
+            <!-- Video stream container -->
+            <div id="video-container" class="video-container active">
+                <video id="webcam-video" autoplay playsinline></video>
+                <div class="video-overlay"></div>
+            </div>
+            
+            <!-- Cropping canvas container -->
+            <div id="crop-container" class="crop-container">
+                <canvas id="cropper-canvas" class="cropper-canvas"></canvas>
+            </div>
+        </div>
+        
+        <div class="workspace-body-footer" style="padding: 10px; background: #1E293B; display: none;"></div>
+        
+        <div class="workspace-footer">
+            <!-- Buttons visible in camera mode -->
+            <div id="camera-footer-controls" style="display: flex; gap: 15px;">
+                <span style="font-size: 13px; color: #94A3B8;">Hold your document steady in front of the camera and click Capture Page.</span>
+            </div>
+            
+            <!-- Buttons visible in cropping mode -->
+            <div id="crop-footer-controls" style="display: none; gap: 15px; width: 100%; justify-content: center;">
+                <button type="button" class="btn-workspace-action secondary" onclick="autoCropSelectedImage()">
+                    ⚡ Smart Auto Crop
+                </button>
+                <button type="button" class="btn-workspace-action secondary" onclick="resetCropSelectedImage()">
+                    🔄 Reset Crop
+                </button>
+                <button type="button" class="btn-workspace-action success" onclick="applyAndConfirmCrop()">
+                    ✅ Apply & Confirm
+                </button>
+                <button type="button" class="btn-workspace-action secondary" onclick="cancelCropMode()">
+                    ❌ Back to Video
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 
 </html>

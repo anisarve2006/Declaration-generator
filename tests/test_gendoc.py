@@ -13,6 +13,8 @@ from gendoc import (
     generate_pdf_bytes,
     merge_pdfs,
     merge_docxs,
+    images_to_pdf,
+    images_to_docx,
 )
 from app import (
     DECLARATION_OPTIONS,
@@ -140,6 +142,36 @@ class TestGendoc(unittest.TestCase):
         with open(merged_path, "wb") as f:
             f.write(merged_buf.getvalue())
         self.assertTrue(os.path.exists(merged_path))
+
+    def test_images_to_pdf(self):
+        # Create a mock image bytes
+        img = Image.new("RGB", (300, 400), (200, 200, 200))
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format="JPEG")
+        
+        pdf_bytes = images_to_pdf([img_bytes.getvalue(), img_bytes.getvalue()])
+        self.assertIsNotNone(pdf_bytes)
+        self.assertGreater(len(pdf_bytes), 1000)
+        
+        pdf_path = os.path.join(OUTPUT_DIR, "captured_images.pdf")
+        with open(pdf_path, "wb") as f:
+            f.write(pdf_bytes)
+        self.assertTrue(os.path.exists(pdf_path))
+
+    def test_images_to_docx(self):
+        # Create a mock image bytes
+        img = Image.new("RGB", (300, 400), (200, 200, 200))
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format="JPEG")
+        
+        docx_bytes = images_to_docx([img_bytes.getvalue(), img_bytes.getvalue()])
+        self.assertIsNotNone(docx_bytes)
+        self.assertGreater(len(docx_bytes), 1000)
+        
+        docx_path = os.path.join(OUTPUT_DIR, "captured_images.docx")
+        with open(docx_path, "wb") as f:
+            f.write(docx_bytes)
+        self.assertTrue(os.path.exists(docx_path))
 
 if __name__ == "__main__":
     unittest.main()

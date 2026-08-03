@@ -5,7 +5,14 @@ import json
 import datetime
 import urllib.request
 from flask import Flask, render_template, request, send_file, jsonify
-from gendoc import generate_docx_bytes, generate_pdf_bytes, merge_pdfs, merge_docxs
+from gendoc import (
+    generate_docx_bytes,
+    generate_pdf_bytes,
+    merge_pdfs,
+    merge_docxs,
+    images_to_pdf,
+    images_to_docx,
+)
 from app import VERTICALS, ALL_SUBJECTS, DECLARATION_OPTIONS
 
 app = Flask(__name__, static_folder="public", static_url_path="")
@@ -211,11 +218,18 @@ def generate():
     # Check for user-uploaded file for merging
     user_file_bytes = None
     user_file_name = None
+    captured_images = []
+    
     if not request.is_json:
         user_file = request.files.get("user_file")
         if user_file and user_file.filename != "":
             user_file_bytes = user_file.read()
             user_file_name = user_file.filename
+            
+        captured_files = request.files.getlist("captured_pages")
+        for f in captured_files:
+            if f and f.filename != "":
+                captured_images.append(f.read())
 
     # Validate file type and format match
     if user_file_name:
@@ -268,8 +282,17 @@ def generate():
 
     if fmt == "pdf":
         buf = generate_pdf_bytes(form_data)
+        
+        # 1. Merge captured images first
+        if captured_images:
+            captured_pdf_bytes = images_to_pdf(captured_images)
+            if captured_pdf_bytes:
+                buf = merge_pdfs(buf.getvalue(), captured_pdf_bytes)
+                
+        # 2. Merge user-uploaded PDF second
         if user_file_bytes and user_file_name.lower().endswith(".pdf"):
             buf = merge_pdfs(buf.getvalue(), user_file_bytes)
+            
         return send_file(
             buf,
             as_attachment=True,
@@ -278,8 +301,17 @@ def generate():
         )
     else:
         buf = generate_docx_bytes(form_data)
+        
+        # 1. Merge captured images first
+        if captured_images:
+            captured_docx_bytes = images_to_docx(captured_images)
+            if captured_docx_bytes:
+                buf = merge_docxs(buf.getvalue(), captured_docx_bytes)
+                
+        # 2. Merge user-uploaded DOCX second
         if user_file_bytes and user_file_name.lower().endswith(".docx"):
             buf = merge_docxs(buf.getvalue(), user_file_bytes)
+            
         return send_file(
             buf,
             as_attachment=True,

@@ -921,6 +921,67 @@ def merge_docxs(dec_docx_bytes, user_docx_data):
     return output_buf
 
 
+def images_to_pdf(images_bytes_list):
+    """
+    Converts a list of image bytes into a single multi-page PDF.
+    Returns the PDF file bytes.
+    """
+    import io
+    from PIL import Image
+    
+    pil_images = []
+    for img_bytes in images_bytes_list:
+        try:
+            img = Image.open(io.BytesIO(img_bytes))
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            pil_images.append(img)
+        except Exception as e:
+            print(f"Error opening image in images_to_pdf: {e}")
+            
+    if not pil_images:
+        return None
+        
+    out = io.BytesIO()
+    pil_images[0].save(out, format="PDF", save_all=True, append_images=pil_images[1:])
+    out.seek(0)
+    return out.getvalue()
+
+
+def images_to_docx(images_bytes_list):
+    """
+    Converts a list of image bytes into a multi-page DOCX document.
+    Returns the DOCX file bytes.
+    """
+    import io
+    from docx import Document
+    from docx.shared import Inches
+    
+    doc = Document()
+    
+    # Configure page margins to 0.5 in
+    sections = doc.sections
+    for s in sections:
+        s.top_margin = Inches(0.5)
+        s.bottom_margin = Inches(0.5)
+        s.left_margin = Inches(0.5)
+        s.right_margin = Inches(0.5)
+        
+    for i, img_bytes in enumerate(images_bytes_list):
+        if i > 0:
+            doc.add_page_break()
+        img_io = io.BytesIO(img_bytes)
+        try:
+            doc.add_picture(img_io, width=Inches(7.5))
+        except Exception as e:
+            print(f"Error adding picture in images_to_docx: {e}")
+            
+    out = io.BytesIO()
+    doc.save(out)
+    out.seek(0)
+    return out.getvalue()
+
+
 # --------------------------------------------------------------------------
 
 # 4. FILE NAME HELPER
