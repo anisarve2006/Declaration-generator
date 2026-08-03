@@ -853,7 +853,76 @@ def generate_pdf_bytes(data):
                 pass
 
 
+def merge_pdfs(dec_pdf_bytes, user_pdf_data):
+    """
+    Merges the generated declaration PDF bytes (dec_pdf_bytes) as the first page,
+    followed by the user's PDF document (user_pdf_data, which can be file path, bytes, or file-like).
+    Returns a BytesIO containing the merged PDF.
+    """
+    import io
+    from pypdf import PdfReader, PdfWriter
+    
+    writer = PdfWriter()
+    
+    # 1. Read declaration PDF
+    dec_reader = PdfReader(io.BytesIO(dec_pdf_bytes))
+    for page in dec_reader.pages:
+        writer.add_page(page)
+        
+    # 2. Read user PDF
+    if isinstance(user_pdf_data, (bytes, bytearray)):
+        user_reader = PdfReader(io.BytesIO(user_pdf_data))
+    elif hasattr(user_pdf_data, "read"):
+        user_pdf_data.seek(0)
+        user_reader = PdfReader(user_pdf_data)
+    else:
+        user_reader = PdfReader(user_pdf_data)
+        
+    for page in user_reader.pages:
+        writer.add_page(page)
+        
+    output_buf = io.BytesIO()
+    writer.write(output_buf)
+    output_buf.seek(0)
+    return output_buf
+
+
+def merge_docxs(dec_docx_bytes, user_docx_data):
+    """
+    Merges the generated declaration DOCX bytes (dec_docx_bytes) as the first page,
+    followed by the user's DOCX document (user_docx_data, which can be file path, bytes, or file-like).
+    Returns a BytesIO containing the merged DOCX.
+    """
+    import io
+    from docx import Document
+    from docxcompose.composer import Composer
+    
+    # 1. Load declaration docx
+    dec_doc = Document(io.BytesIO(dec_docx_bytes))
+    
+    # 2. Load user docx
+    if isinstance(user_docx_data, (bytes, bytearray)):
+        user_doc = Document(io.BytesIO(user_docx_data))
+    elif hasattr(user_docx_data, "read"):
+        user_docx_data.seek(0)
+        user_doc = Document(user_docx_data)
+    else:
+        user_doc = Document(user_docx_data)
+        
+    # Add page break to separate the declaration page from user document
+    dec_doc.add_page_break()
+    
+    composer = Composer(dec_doc)
+    composer.append(user_doc)
+    
+    output_buf = io.BytesIO()
+    composer.save(output_buf)
+    output_buf.seek(0)
+    return output_buf
+
+
 # --------------------------------------------------------------------------
+
 # 4. FILE NAME HELPER
 # --------------------------------------------------------------------------
 def build_filename(subject_code, assignment_no, ext):
@@ -987,6 +1056,27 @@ class DeclarationFormApp(BaseAppClass):
             .grid(row=0, column=2, padx=(4, 0))
         row += 1
 
+        # Merge File row
+        ttk.Label(container, text="Attach to existing File (Optional):").grid(row=row, column=0, sticky="w", **pad)
+        merge_file_frame = ttk.Frame(container)
+        merge_file_frame.grid(row=row, column=1, sticky="ew", **pad)
+        merge_file_frame.columnconfigure(0, weight=1)
+        self.merge_file_path_var = tk.StringVar(value="")
+        ttk.Entry(merge_file_frame, textvariable=self.merge_file_path_var, state="readonly") \
+            .grid(row=0, column=0, sticky="ew")
+        ttk.Button(merge_file_frame, text="Browse...", command=self.browse_merge_file) \
+            .grid(row=0, column=1, padx=(4, 0))
+        ttk.Button(merge_file_frame, text="Clear", command=lambda: self.merge_file_path_var.set("")) \
+            .grid(row=0, column=2, padx=(4, 0))
+        row += 1
+
+        # Output Filename row
+        ttk.Label(container, text="Custom Output Filename (Optional):").grid(row=row, column=0, sticky="w", **pad)
+        self.output_filename_var = tk.StringVar(value="")
+        ttk.Entry(container, textvariable=self.output_filename_var) \
+            .grid(row=row, column=1, sticky="ew", **pad)
+        row += 1
+
         ttk.Label(container, text="Tick applicable declaration statement(s):") \
             .grid(row=row, column=0, columnspan=2, sticky="w", padx=14, pady=(10, 2)); row += 1
 
@@ -1029,6 +1119,15 @@ class DeclarationFormApp(BaseAppClass):
         if path:
             self.signature_path_var.set(path)
 
+    def browse_merge_file(self):
+        path = filedialog.askopenfilename(
+            title="Choose PDF or DOCX file to merge",
+            filetypes=[("PDF/DOCX files", "*.pdf *.docx"), ("All files", "*.*")],
+        )
+        if path:
+            self.merge_file_path_var.set(path)
+
+
     def on_subject_change(self, event=None):
         subject = self.subject_var.get()
         for name, code, vertical in self.all_subjects:
@@ -1063,21 +1162,64 @@ class DeclarationFormApp(BaseAppClass):
         if data is None:
             return
 
+        merge_file_path = self.merge_file_path_var.get().strip()
+        custom_name = self.output_filename_var.get().strip()
+
+        if merge_file_path:
+            ext = os.path.splitext(merge_file_path)[1].lower()
+            if ext == ".docx" and "pdf" in formats and "docx" not in formats:
+                messagebox.showwarning("Mismatch", "You attached a .docx file, but selected PDF output. Please generate DOCX.")
+                return
+            if ext == ".pdf" and "docx" in formats and "pdf" not in formats:
+                messagebox.showwarning("Mismatch", "You attached a .pdf file, but selected DOCX output. Please generate PDF.")
+                return
+
         generated = []
         try:
-            if "docx" in formats:
-                fname = build_filename(data["subject_code"], data["assignment_no"], "docx")
-                path = os.path.join(DOCX_DIR, fname)
-                generate_docx(data, path)
-                generated.append(path)
-            if "pdf" in formats:
-                fname = build_filename(data["subject_code"], data["assignment_no"], "pdf")
-                path = os.path.join(PDF_DIR, fname)
-                generate_pdf(data, path)
-                generated.append(path)
+            for f in formats:
+                # Build custom or default base filename
+                if custom_name:
+                    base_name = custom_name
+                    # strip extension if user provided it
+                    if base_name.lower().endswith(".docx"):
+                        base_name = base_name[:-5]
+                    elif base_name.lower().endswith(".pdf"):
+                        base_name = base_name[:-4]
+                else:
+                    base_name = build_filename(data["subject_code"], data["assignment_no"], f)
+                    if base_name.endswith(f".{f}"):
+                        base_name = base_name[:-(len(f)+1)]
+                
+                fname = f"{base_name}.{f}"
+
+                if f == "docx":
+                    path = os.path.join(DOCX_DIR, fname)
+                    if merge_file_path and merge_file_path.lower().endswith(".docx"):
+                        tmp_buf = generate_docx_bytes(data)
+                        with open(merge_file_path, "rb") as user_f:
+                            user_bytes = user_f.read()
+                        merged_buf = merge_docxs(tmp_buf.getvalue(), user_bytes)
+                        with open(path, "wb") as out_f:
+                            out_f.write(merged_buf.getvalue())
+                    else:
+                        generate_docx(data, path)
+                    generated.append(path)
+                elif f == "pdf":
+                    path = os.path.join(PDF_DIR, fname)
+                    if merge_file_path and merge_file_path.lower().endswith(".pdf"):
+                        tmp_buf = generate_pdf_bytes(data)
+                        with open(merge_file_path, "rb") as user_f:
+                            user_bytes = user_f.read()
+                        merged_buf = merge_pdfs(tmp_buf.getvalue(), user_bytes)
+                        with open(path, "wb") as out_f:
+                            out_f.write(merged_buf.getvalue())
+                    else:
+                        generate_pdf(data, path)
+                    generated.append(path)
         except Exception as exc:
             messagebox.showerror("Error generating file", str(exc))
             return
+
 
         self.status_var.set("Saved: " + ", ".join(os.path.basename(p) for p in generated))
         messagebox.showinfo("Done", "File(s) generated:\n" + "\n".join(generated))

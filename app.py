@@ -64,7 +64,10 @@ from gendoc import (
     process_signature_image,
     generate_docx_bytes,
     generate_pdf_bytes,
+    merge_pdfs,
+    merge_docxs,
 )
+
 
 # --------------------------------------------------------------------------
 # 6. STREAMLIT WEB UI
@@ -322,6 +325,16 @@ with st.container():
 
 st.markdown("---")
 
+with st.container():
+    st.subheader("📁 Attachment & Output Options (Optional)")
+    user_file = st.file_uploader("Upload your assignment file (PDF or DOCX)", type=["pdf", "docx"])
+    safe_assignment = assignment_no.strip().replace(" ", "").replace("/", "-")
+    default_filename = f"{selected_subj_info['code']}-{safe_assignment}-Declaration Form"
+    custom_name = st.text_input("Custom Output Filename (without extension)", value=default_filename)
+
+st.markdown("---")
+
+
 # Generate buttons
 if not selected_options:
     st.warning("⚠️ Please select at least one declaration statement above.")
@@ -356,32 +369,69 @@ else:
             "updated_at": datetime.datetime.now().isoformat()
         })
 
-    safe_assignment = assignment_no.strip().replace(" ", "").replace("/", "-")
-    base_filename = f"{selected_subj_info['code']}-{safe_assignment}-Declaration Form"
+    final_filename = custom_name.strip() if custom_name.strip() else default_filename
+    if final_filename.lower().endswith(".pdf"):
+        final_filename = final_filename[:-4]
+    elif final_filename.lower().endswith(".docx"):
+        final_filename = final_filename[:-5]
 
     st.subheader("📥 Download Generated Declaration Form")
     col_dl1, col_dl2 = st.columns(2)
 
-    with st.spinner("✨ Rendering official declaration layout & embedding signature..."):
-        docx_buffer = generate_docx_bytes(form_data)
-        pdf_buffer = generate_pdf_bytes(form_data)
+    if user_file is not None:
+        file_ext = user_file.name.split(".")[-1].lower()
+        if file_ext == "pdf":
+            with st.spinner("✨ Merging declaration with uploaded PDF..."):
+                dec_pdf = generate_pdf_bytes(form_data)
+                pdf_buffer = merge_pdfs(dec_pdf.getvalue(), user_file.getvalue())
+            with col_dl2:
+                st.download_button(
+                    label="📄 Download Merged PDF (.pdf)",
+                    data=pdf_buffer,
+                    file_name=f"{final_filename}.pdf",
+                    mime="application/pdf",
+                    use_container_width=True,
+                    on_click=lambda: st.toast("✅ Merged PDF Downloaded!", icon="📄")
+                )
+            with col_dl1:
+                st.info("💡 Attached file is a PDF. Output is PDF only.")
+        elif file_ext == "docx":
+            with st.spinner("✨ Merging declaration with uploaded DOCX..."):
+                dec_docx = generate_docx_bytes(form_data)
+                docx_buffer = merge_docxs(dec_docx.getvalue(), user_file.getvalue())
+            with col_dl1:
+                st.download_button(
+                    label="📝 Download Merged Word (.docx)",
+                    data=docx_buffer,
+                    file_name=f"{final_filename}.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True,
+                    on_click=lambda: st.toast("✅ Merged DOCX Downloaded!", icon="📝")
+                )
+            with col_dl2:
+                st.info("💡 Attached file is a Word document. Output is DOCX only.")
+    else:
+        with st.spinner("✨ Rendering official declaration layout & embedding signature..."):
+            docx_buffer = generate_docx_bytes(form_data)
+            pdf_buffer = generate_pdf_bytes(form_data)
 
-    with col_dl1:
-        st.download_button(
-            label="📝 Download Word (.docx)",
-            data=docx_buffer,
-            file_name=f"{base_filename}.docx",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            use_container_width=True,
-            on_click=lambda: st.toast("✅ .DOCX Declaration Form Downloaded!", icon="📝")
-        )
+        with col_dl1:
+            st.download_button(
+                label="📝 Download Word (.docx)",
+                data=docx_buffer,
+                file_name=f"{final_filename}.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True,
+                on_click=lambda: st.toast("✅ .DOCX Declaration Form Downloaded!", icon="📝")
+            )
 
-    with col_dl2:
-        st.download_button(
-            label="📄 Download PDF (.pdf)",
-            data=pdf_buffer,
-            file_name=f"{base_filename}.pdf",
-            mime="application/pdf",
-            use_container_width=True,
-            on_click=lambda: st.toast("✅ .PDF Declaration Form Downloaded!", icon="📄")
-        )
+        with col_dl2:
+            st.download_button(
+                label="📄 Download PDF (.pdf)",
+                data=pdf_buffer,
+                file_name=f"{final_filename}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+                on_click=lambda: st.toast("✅ .PDF Declaration Form Downloaded!", icon="📄")
+            )
+

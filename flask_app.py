@@ -5,7 +5,7 @@ import json
 import datetime
 import urllib.request
 from flask import Flask, render_template, request, send_file, jsonify
-from gendoc import generate_docx_bytes, generate_pdf_bytes
+from gendoc import generate_docx_bytes, generate_pdf_bytes, merge_pdfs, merge_docxs
 from app import VERTICALS, ALL_SUBJECTS, DECLARATION_OPTIONS
 
 app = Flask(__name__, static_folder="public", static_url_path="")
@@ -170,6 +170,7 @@ def generate():
         fmt = str(req_data.get("format", "docx")).lower()
         sig_draw_data = str(req_data.get("signature_draw_data", "")).strip()
         custom_subjects = req_data.get("custom_subjects", [])
+        output_filename = str(req_data.get("output_filename", "")).strip()
     else:
         s_idx = int(request.form.get("subject_idx", 0))
         if s_idx < len(ALL_SUBJECTS):
@@ -194,6 +195,7 @@ def generate():
         fmt = request.form.get("format", "docx").lower()
         sig_draw_data = request.form.get("signature_draw_data", "").strip()
         custom_subjects = request.form.get("custom_subjects", "[]")
+        output_filename = request.form.get("output_filename", "").strip()
 
     # Check drawn signature data URL or uploaded signature file
     sig_bytes_io = None
@@ -205,6 +207,23 @@ def generate():
         sig_file = request.files.get("signature")
         if sig_file and sig_file.filename != "":
             sig_bytes_io = io.BytesIO(sig_file.read())
+
+    # Check for user-uploaded file for merging
+    user_file_bytes = None
+    user_file_name = None
+    if not request.is_json:
+        user_file = request.files.get("user_file")
+        if user_file and user_file.filename != "":
+            user_file_bytes = user_file.read()
+            user_file_name = user_file.filename
+
+    # Validate file type and format match
+    if user_file_name:
+        ext = os.path.splitext(user_file_name.lower())[1]
+        if ext == ".pdf" and fmt != "pdf":
+            return "Error: Attached file is PDF but requested format is not PDF. Please download as PDF.", 400
+        if ext == ".docx" and fmt != "docx":
+            return "Error: Attached file is DOCX but requested format is not DOCX. Please download as Word (.docx).", 400
 
     # Upsert student profile to remote Supabase database
     if roll_no:
@@ -236,11 +255,21 @@ def generate():
         "signature_bytes": sig_bytes_io,
     }
 
-    safe_assignment = assignment_no.replace(" ", "").replace("/", "-")
-    base_filename = f"{subj_code_val}-{safe_assignment}-Declaration Form"
+    if output_filename:
+        # Strip extension if user included it
+        if output_filename.lower().endswith(".pdf"):
+            output_filename = output_filename[:-4]
+        elif output_filename.lower().endswith(".docx"):
+            output_filename = output_filename[:-5]
+        base_filename = output_filename
+    else:
+        safe_assignment = assignment_no.replace(" ", "").replace("/", "-")
+        base_filename = f"{subj_code_val}-{safe_assignment}-Declaration Form"
 
     if fmt == "pdf":
         buf = generate_pdf_bytes(form_data)
+        if user_file_bytes and user_file_name.lower().endswith(".pdf"):
+            buf = merge_pdfs(buf.getvalue(), user_file_bytes)
         return send_file(
             buf,
             as_attachment=True,
@@ -249,12 +278,15 @@ def generate():
         )
     else:
         buf = generate_docx_bytes(form_data)
+        if user_file_bytes and user_file_name.lower().endswith(".docx"):
+            buf = merge_docxs(buf.getvalue(), user_file_bytes)
         return send_file(
             buf,
             as_attachment=True,
             download_name=f"{base_filename}.docx",
             mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
+
 
 def get_asset_path(filename):
     # Try static_assets first (packaged in Vercel lambda environment)

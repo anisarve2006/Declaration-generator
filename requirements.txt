@@ -4,3 +4,5 @@ flask>=2.0.0
 python-docx>=0.8.11
 reportlab>=3.6.0
 Pillow>=9.0.0
+pypdf>=6.6.2
+docxcompose>=2.2.0

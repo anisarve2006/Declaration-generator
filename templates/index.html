@@ -791,7 +791,28 @@
                     {% endfor %}
                 </div>
 
+                <!-- Section 5: Attachment & Output Options -->
+                <div class="section-title">Attachment & Output Options</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="user_file">Upload Your Assignment File (Optional, .pdf or .docx)</label>
+                        <input type="file" id="user_file" name="user_file" accept=".pdf,.docx" onchange="handleUserFileChange()">
+                        <small style="color: var(--text-muted); font-size: 11.5px; display: block; margin-top: 4px;">
+                            If uploaded, the generated declaration will be attached as the first page.
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label for="output_filename">Custom Output Filename (Optional)</label>
+                        <input type="text" id="output_filename" name="output_filename" placeholder="e.g. My-Assignment-Declaration">
+                        <small style="color: var(--text-muted); font-size: 11.5px; display: block; margin-top: 4px;">
+                            Leave blank to use default name. Extension will be appended automatically.
+                        </small>
+                    </div>
+                </div>
+
                 <!-- Download Actions -->
+
                 <div class="btn-group">
                     <button type="submit" name="format" value="docx" onclick="triggerButtonTransition(this, '.DOCX')" class="btn btn-primary">
                         📝 Download Word (.docx)
@@ -897,6 +918,57 @@
         // Store original subject option list so we can restore defaults cleanly
         const originalSubjectOptionsHTML = document.getElementById("subject_idx") ? document.getElementById("subject_idx").innerHTML : '';
 
+        function handleUserFileChange() {
+            const fileInput = document.getElementById('user_file');
+            const docxBtn = document.querySelector('button[value="docx"]');
+            const pdfBtn = document.querySelector('button[value="pdf"]');
+            
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const ext = file.name.split('.').pop().toLowerCase();
+                
+                if (ext === 'pdf') {
+                    // Disable docx download, enable pdf
+                    docxBtn.disabled = true;
+                    docxBtn.style.opacity = '0.5';
+                    docxBtn.style.cursor = 'not-allowed';
+                    docxBtn.title = "Attached file is PDF. Merging is only supported with PDF output.";
+                    
+                    pdfBtn.disabled = false;
+                    pdfBtn.style.opacity = '1';
+                    pdfBtn.style.cursor = 'pointer';
+                    pdfBtn.title = "";
+                } else if (ext === 'docx') {
+                    // Disable pdf download, enable docx
+                    pdfBtn.disabled = true;
+                    pdfBtn.style.opacity = '0.5';
+                    pdfBtn.style.cursor = 'not-allowed';
+                    pdfBtn.title = "Attached file is DOCX. Merging is only supported with Word (.docx) output.";
+                    
+                    docxBtn.disabled = false;
+                    docxBtn.style.opacity = '1';
+                    docxBtn.style.cursor = 'pointer';
+                    docxBtn.title = "";
+                } else {
+                    // Invalid extension - clear selection
+                    alert("Please upload only PDF or DOCX files.");
+                    fileInput.value = '';
+                    handleUserFileChange();
+                }
+            } else {
+                // Reset buttons
+                docxBtn.disabled = false;
+                docxBtn.style.opacity = '1';
+                docxBtn.style.cursor = 'pointer';
+                docxBtn.title = "";
+                
+                pdfBtn.disabled = false;
+                pdfBtn.style.opacity = '1';
+                pdfBtn.style.cursor = 'pointer';
+                pdfBtn.title = "";
+            }
+        }
+
         // --- MODAL LOGIC ---
         function openCustomiseModal() {
             switchModalTab('customise');
@@ -940,8 +1012,12 @@
                 document.getElementById('branch').value = '';
                 document.getElementById('semester').value = '';
                 document.getElementById('division').value = '';
+                if (document.getElementById('user_file')) document.getElementById('user_file').value = '';
+                if (document.getElementById('output_filename')) document.getElementById('output_filename').value = '';
+                handleUserFileChange();
 
                 // Reset modal fields
+
                 document.getElementById('cust_roll_no').value = '';
                 document.getElementById('cust_student_name').value = '';
                 document.getElementById('cust_branch').value = '';

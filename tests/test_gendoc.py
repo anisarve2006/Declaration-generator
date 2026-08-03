@@ -11,6 +11,8 @@ from gendoc import (
     process_signature_image,
     generate_docx_bytes,
     generate_pdf_bytes,
+    merge_pdfs,
+    merge_docxs,
 )
 from app import (
     DECLARATION_OPTIONS,
@@ -88,5 +90,57 @@ class TestGendoc(unittest.TestCase):
             f.write(pdf_buf.getvalue())
         self.assertTrue(os.path.exists(sample_path))
 
+    def test_merge_pdfs(self):
+        form_data = {
+            "vertical": "PC_PEC",
+            "subject_name": "Machine Learning",
+            "subject_code": "PCCC05T",
+            "assignment_no": "Experiment 1",
+            "student_name": "Test Student",
+            "roll_no": "24102A0000",
+            "branch": "CMPN",
+            "semester": "V",
+            "division": "A",
+            "date": "20-07-2026",
+            "selected_options": [1, 2, 3],
+            "signature_bytes": None
+        }
+        dec_pdf_buf = generate_pdf_bytes(form_data)
+        
+        merged_buf = merge_pdfs(dec_pdf_buf.getvalue(), dec_pdf_buf.getvalue())
+        self.assertIsNotNone(merged_buf)
+        self.assertGreater(len(merged_buf.getvalue()), len(dec_pdf_buf.getvalue()))
+        
+        merged_path = os.path.join(OUTPUT_DIR, "merged_test_output.pdf")
+        with open(merged_path, "wb") as f:
+            f.write(merged_buf.getvalue())
+        self.assertTrue(os.path.exists(merged_path))
+
+    def test_merge_docxs(self):
+        form_data = {
+            "vertical": "PC_PEC",
+            "subject_name": "Machine Learning",
+            "subject_code": "PCCC05T",
+            "assignment_no": "Experiment 1",
+            "student_name": "Test Student",
+            "roll_no": "24102A0000",
+            "branch": "CMPN",
+            "semester": "V",
+            "division": "A",
+            "date": "20-07-2026",
+            "selected_options": [1, 2, 3],
+            "signature_bytes": None
+        }
+        dec_docx_buf = generate_docx_bytes(form_data)
+        
+        merged_buf = merge_docxs(dec_docx_buf.getvalue(), dec_docx_buf.getvalue())
+        self.assertIsNotNone(merged_buf)
+        
+        merged_path = os.path.join(OUTPUT_DIR, "merged_test_output.docx")
+        with open(merged_path, "wb") as f:
+            f.write(merged_buf.getvalue())
+        self.assertTrue(os.path.exists(merged_path))
+
 if __name__ == "__main__":
     unittest.main()
+
