@@ -661,29 +661,121 @@
             }
         }
 
-        /* Camera Trigger and Gallery Styles */
-        .btn-camera-trigger {
+        /* Attachment Card Grid Layout */
+        .attachment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 10px;
+            margin-bottom: 12px;
+        }
+        
+        @media (max-width: 600px) {
+            .attachment-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+        
+        .attachment-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 18px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            width: 100%;
-            background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            border-radius: 12px;
-            font-size: 14.5px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-            margin-bottom: 5px;
+            min-height: 100px;
+            position: relative;
+            box-sizing: border-box;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
         
-        .btn-camera-trigger:hover {
+        .attachment-card:hover {
+            border-color: #818CF8;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.15);
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+        }
+        
+        .attachment-card.active {
+            border-color: #10B981;
+            background: rgba(16, 185, 129, 0.12);
+            border-style: solid;
+        }
+        
+        .attachment-card.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .attachment-card svg {
+            width: 32px;
+            height: 32px;
+            fill: #818CF8;
+            transition: transform 0.25s ease;
+        }
+        
+        .attachment-card:hover svg {
+            transform: scale(1.1);
+            fill: #A5B4FC;
+        }
+        
+        .attachment-card.active svg {
+            fill: #10B981;
+        }
+
+        .attachment-card-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .attachment-card-sub {
+            font-size: 11px;
+            color: #94A3B8;
+            font-weight: 500;
+        }
+        
+        .file-selected-info {
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            padding: 5px 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+            max-width: 95%;
+            box-sizing: border-box;
+        }
+        
+        .btn-clear-file {
+            background: none;
+            border: none;
+            color: #EF4444;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        
+        .btn-clear-file:hover {
+            background: rgba(239, 68, 68, 0.15);
         }
         
         .captured-gallery {
@@ -1373,33 +1465,38 @@
                 </div>
 
                 <!-- Section 5: Attachment & Output Options -->
-                <div class="section-title">Attachment & Output Options</div>
+                <div class="section-title">Attachment & Scanned Pages (Optional)</div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="user_file">Upload Your Assignment File (Optional, .pdf or .docx)</label>
-                        <input type="file" id="user_file" name="user_file" accept=".pdf,.docx" onchange="handleUserFileChange()">
-                        <small style="color: var(--text-muted); font-size: 11.5px; display: block; margin-top: 4px;">
-                            If uploaded, the generated declaration will be attached as the first page.
-                        </small>
+                <div class="attachment-grid">
+                    <!-- Upload File Card -->
+                    <div class="attachment-card" id="upload-card" onclick="triggerFileInput()">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+                        </svg>
+                        <div class="attachment-card-title">Upload File</div>
+                        <div class="attachment-card-sub" id="upload-subtext">PDF or DOCX format</div>
+                        <input type="file" id="user_file" name="user_file" accept=".pdf,.docx" onchange="handleUserFileChange()" style="display: none;">
+                        <div id="file-info-container" style="display: none;"></div>
                     </div>
-                    <div class="form-group">
-                        <label for="output_filename">Custom Output Filename (Optional)</label>
-                        <input type="text" id="output_filename" name="output_filename" placeholder="e.g. My-Assignment-Declaration">
-                        <small style="color: var(--text-muted); font-size: 11.5px; display: block; margin-top: 4px;">
-                            Leave blank to use default name. Extension will be appended automatically.
-                        </small>
+                    
+                    <!-- Scan Pages Card -->
+                    <div class="attachment-card" id="scan-card" onclick="openCameraModal()">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                        </svg>
+                        <div class="attachment-card-title">Scan Pages</div>
+                        <div class="attachment-card-sub" id="scan-subtext">Capture from camera</div>
                     </div>
                 </div>
 
+                <div id="captured-gallery" class="captured-gallery" style="display: none; margin-bottom: 15px;"></div>
+
                 <div class="form-group" style="margin-top: 15px;">
-                    <label>Capture Assignment Pages from Camera (Optional)</label>
-                    <button type="button" class="btn-camera-trigger" onclick="openCameraModal()">
-                        📸 Capture Pages via Camera
-                    </button>
-                    <div id="captured-gallery" class="captured-gallery">
-                        <span style="font-size: 13px; color: var(--text-muted); padding: 10px 0;">No pages captured yet.</span>
-                    </div>
+                    <label for="output_filename">Custom Output Filename (Optional)</label>
+                    <input type="text" id="output_filename" name="output_filename" placeholder="e.g. My-Assignment-Declaration">
+                    <small style="color: var(--text-muted); font-size: 11.5px; display: block; margin-top: 4px;">
+                        Leave blank to use default name. Extension will be appended automatically.
+                    </small>
                 </div>
 
                 <!-- Download Actions -->
@@ -1509,54 +1606,89 @@
         // Store original subject option list so we can restore defaults cleanly
         const originalSubjectOptionsHTML = document.getElementById("subject_idx") ? document.getElementById("subject_idx").innerHTML : '';
 
+        function triggerFileInput() {
+            document.getElementById('user_file').click();
+        }
+
+        function clearFileSelection(event) {
+            if (event) event.stopPropagation();
+            const fileInput = document.getElementById('user_file');
+            fileInput.value = '';
+            
+            const fileInfo = document.getElementById('file-info-container');
+            fileInfo.style.display = 'none';
+            fileInfo.innerHTML = '';
+            
+            const uploadCard = document.getElementById('upload-card');
+            uploadCard.classList.remove('active');
+            
+            const uploadSub = document.getElementById('upload-subtext');
+            uploadSub.style.display = 'block';
+            
+            // Re-enable scan card
+            document.getElementById('scan-card').classList.remove('disabled');
+            
+            // Reset submit buttons
+            const docxBtn = document.querySelector('button[value="docx"]');
+            const pdfBtn = document.querySelector('button[value="pdf"]');
+            docxBtn.disabled = false; docxBtn.style.opacity = '1'; docxBtn.style.cursor = 'pointer'; docxBtn.title = '';
+            pdfBtn.disabled = false; pdfBtn.style.opacity = '1'; pdfBtn.style.cursor = 'pointer'; pdfBtn.title = '';
+        }
+
         function handleUserFileChange() {
             const fileInput = document.getElementById('user_file');
             const docxBtn = document.querySelector('button[value="docx"]');
             const pdfBtn = document.querySelector('button[value="pdf"]');
+            const uploadCard = document.getElementById('upload-card');
+            const scanCard = document.getElementById('scan-card');
+            const fileInfo = document.getElementById('file-info-container');
+            const uploadSub = document.getElementById('upload-subtext');
             
             if (fileInput.files && fileInput.files[0]) {
                 const file = fileInput.files[0];
                 const ext = file.name.split('.').pop().toLowerCase();
                 
-                if (ext === 'pdf') {
-                    // Disable docx download, enable pdf
-                    docxBtn.disabled = true;
-                    docxBtn.style.opacity = '0.5';
-                    docxBtn.style.cursor = 'not-allowed';
-                    docxBtn.title = "Attached file is PDF. Merging is only supported with PDF output.";
+                if (ext === 'pdf' || ext === 'docx') {
+                    uploadCard.classList.add('active');
+                    uploadSub.style.display = 'none';
                     
-                    pdfBtn.disabled = false;
-                    pdfBtn.style.opacity = '1';
-                    pdfBtn.style.cursor = 'pointer';
-                    pdfBtn.title = "";
-                } else if (ext === 'docx') {
-                    // Disable pdf download, enable docx
-                    pdfBtn.disabled = true;
-                    pdfBtn.style.opacity = '0.5';
-                    pdfBtn.style.cursor = 'not-allowed';
-                    pdfBtn.title = "Attached file is DOCX. Merging is only supported with Word (.docx) output.";
+                    fileInfo.style.display = 'block';
+                    fileInfo.innerHTML = `
+                        <div class="file-selected-info">
+                            <span>📄 ${file.name}</span>
+                            <button type="button" class="btn-clear-file" onclick="clearFileSelection(event)">✕</button>
+                        </div>
+                    `;
                     
-                    docxBtn.disabled = false;
-                    docxBtn.style.opacity = '1';
-                    docxBtn.style.cursor = 'pointer';
-                    docxBtn.title = "";
+                    scanCard.classList.add('disabled');
+                    
+                    if (ext === 'pdf') {
+                        docxBtn.disabled = true;
+                        docxBtn.style.opacity = '0.5';
+                        docxBtn.style.cursor = 'not-allowed';
+                        docxBtn.title = "Attached file is PDF. Merging is only supported with PDF output.";
+                        
+                        pdfBtn.disabled = false;
+                        pdfBtn.style.opacity = '1';
+                        pdfBtn.style.cursor = 'pointer';
+                        pdfBtn.title = "";
+                    } else {
+                        pdfBtn.disabled = true;
+                        pdfBtn.style.opacity = '0.5';
+                        pdfBtn.style.cursor = 'not-allowed';
+                        pdfBtn.title = "Attached file is DOCX. Merging is only supported with Word (.docx) output.";
+                        
+                        docxBtn.disabled = false;
+                        docxBtn.style.opacity = '1';
+                        docxBtn.style.cursor = 'pointer';
+                        docxBtn.title = "";
+                    }
                 } else {
-                    // Invalid extension - clear selection
                     alert("Please upload only PDF or DOCX files.");
-                    fileInput.value = '';
-                    handleUserFileChange();
+                    clearFileSelection();
                 }
             } else {
-                // Reset buttons
-                docxBtn.disabled = false;
-                docxBtn.style.opacity = '1';
-                docxBtn.style.cursor = 'pointer';
-                docxBtn.title = "";
-                
-                pdfBtn.disabled = false;
-                pdfBtn.style.opacity = '1';
-                pdfBtn.style.cursor = 'pointer';
-                pdfBtn.title = "";
+                clearFileSelection();
             }
         }
 
@@ -2618,10 +2750,22 @@
             const listEl = document.getElementById('captured-gallery');
             listEl.innerHTML = '';
             
+            const uploadCard = document.getElementById('upload-card');
+            const scanCard = document.getElementById('scan-card');
+            const scanSub = document.getElementById('scan-subtext');
+            
             if (capturedPages.length === 0) {
-                listEl.innerHTML = '<span style="font-size: 13px; color: var(--text-muted); padding: 10px 0;">No pages captured yet.</span>';
+                listEl.style.display = 'none';
+                uploadCard.classList.remove('disabled');
+                scanCard.classList.remove('active');
+                scanSub.innerText = 'Capture from camera';
                 return;
             }
+            
+            listEl.style.display = 'flex';
+            scanCard.classList.add('active');
+            uploadCard.classList.add('disabled');
+            scanSub.innerText = `${capturedPages.length} page(s) captured`;
             
             capturedPages.forEach((page, index) => {
                 const item = document.createElement('div');
