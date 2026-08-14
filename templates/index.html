@@ -34,6 +34,9 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
+    <!-- PDF-Lib for client-side PDF merging & zero server payload limits -->
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.9/dist/pdf-lib.min.js"></script>
+
     <title>VIT Declaration Form Generator - Create College Undertaking Online</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1729,9 +1732,29 @@
         document.getElementById('mainForm').addEventListener('submit', async function(event) {
             event.preventDefault();
             
+            // Ensure student profile & signature canvas data are synced before preparing submission
+            prepareFormSubmission();
+
             const submitBtn = event.submitter || document.activeElement;
             const formatName = (submitBtn && submitBtn.value === 'pdf') ? 'PDF' : 'DOCX';
+            const isPdf = (formatName === 'PDF');
             
+            const fileInput = document.getElementById('user_file');
+            const userFile = (fileInput && fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
+
+            // Check if user attached a file and if it's a PDF
+            const isUserPdf = userFile && userFile.name.toLowerCase().endsWith('.pdf');
+            const doClientSidePdfMerge = isPdf && isUserPdf;
+
+            // Size validation for DOCX uploads (Vercel serverless limit is ~4.5 MB)
+            if (!isPdf && userFile) {
+                const sizeMB = userFile.size / (1024 * 1024);
+                if (sizeMB > 4.0) {
+                    alert(`⚠️ The attached Word document is too large (${sizeMB.toFixed(1)} MB).\n\nDue to serverless cloud limits (4.5 MB), large Word files cannot be processed on the server.\n\n💡 Solution: Convert/Save your assignment as a PDF file and select "Download PDF" — PDF merging runs 100% in your browser for files of ANY size!`);
+                    return;
+                }
+            }
+
             const originalHTML = submitBtn.innerHTML;
             submitBtn.classList.add('btn-loading');
             submitBtn.innerHTML = `<span class="btn-spinner"></span> Generating ${formatName}...`;
@@ -1741,6 +1764,12 @@
                 formData.set('format', submitBtn.value);
             }
             
+            // If performing client-side PDF merge, strip user_file from payload sent to Vercel!
+            // This reduces payload size to ~30-50 KB and avoids FUNCTION_PAYLOAD_TOO_LARGE completely.
+            if (doClientSidePdfMerge) {
+                formData.delete('user_file');
+            }
+
             try {
                 const response = await fetch('/generate', {
                     method: 'POST',
@@ -1761,8 +1790,37 @@
                     }
                 }
                 
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
+                let finalBlob;
+
+                if (doClientSidePdfMerge) {
+                    submitBtn.innerHTML = `<span class="btn-spinner"></span> Merging PDF in browser...`;
+                    
+                    if (typeof PDFLib === 'undefined') {
+                        throw new Error("PDF Library (pdf-lib) failed to load. Please check your network connection.");
+                    }
+
+                    const decArrayBuffer = await response.arrayBuffer();
+                    const userArrayBuffer = await userFile.arrayBuffer();
+
+                    const mergedPdf = await PDFLib.PDFDocument.create();
+                    const decDoc = await PDFLib.PDFDocument.load(decArrayBuffer);
+                    const userDoc = await PDFLib.PDFDocument.load(userArrayBuffer);
+
+                    // Copy declaration page(s)
+                    const decPages = await mergedPdf.copyPages(decDoc, decDoc.getPageIndices());
+                    decPages.forEach(page => mergedPdf.addPage(page));
+
+                    // Copy user document page(s)
+                    const userPages = await mergedPdf.copyPages(userDoc, userDoc.getPageIndices());
+                    userPages.forEach(page => mergedPdf.addPage(page));
+
+                    const mergedPdfBytes = await mergedPdf.save();
+                    finalBlob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+                } else {
+                    finalBlob = await response.blob();
+                }
+
+                const url = window.URL.createObjectURL(finalBlob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = filename;
@@ -1782,7 +1840,11 @@
                 
             } catch (err) {
                 console.error("Error generating document: ", err);
-                alert("Error generating document: " + err.message);
+                let errMsg = err.message || "Unknown error";
+                if (errMsg.includes("FUNCTION_PAYLOAD_TOO_LARGE") || errMsg.includes("413") || errMsg.includes("Entity Too Large")) {
+                    errMsg = "Uploaded file exceeds server size limit (4.5 MB). Please select 'Download PDF' for instant client-side processing of large files.";
+                }
+                alert("Error generating document: " + errMsg);
                 submitBtn.classList.remove('btn-loading');
                 submitBtn.innerHTML = originalHTML;
             }
